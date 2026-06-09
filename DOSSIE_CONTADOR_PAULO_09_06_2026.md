@@ -17,6 +17,17 @@
 | CNPJ | **EM PROCESSO** — protocolo esperado **quarta 10/06/2026** |
 | Contador | **Paulo (Master Group 888)** — briefing enviado 05/05 |
 
+**CNAEs candidatos** *(a CONFIRMAR com Paulo — a escolha tem consequência fiscal E regulatória):*
+| CNAE | Descrição | Papel |
+|---|---|---|
+| **63.11-9/00** | Tratamento de dados, provedores de serviço de aplicação (SaaS) | **principal** — a plataforma é SaaS |
+| 62.03-1/00 | Desenvolvimento e licenciamento de programas não-customizáveis | software / licenciamento |
+| 62.01-5/01 | Desenvolvimento de programas sob encomenda | desenvolvimento |
+| 85.99-6/04 | Treinamento em desenvolvimento profissional e gerencial | eixo Ensino (cursos) |
+| 82.99-7/99 | Outras atividades de serviços prestados às empresas | intermediação / marketplace |
+
+⚠️ **Atenção (decisão do Paulo):** **evitar CNAE de saúde (86.xx)** — classificaria a empresa como **prestador de serviço de saúde**, o que **contradiz** o posicionamento "não é clínica/telemedicina" e pode atrair **licença sanitária/ANVISA**. Manter o enquadramento **tecnologia (SaaS) + intermediação** preserva a tese fiscal. Impacta Simples Anexo III + Fator R.
+
 ---
 
 ## 2. SÓCIOS + CAP TABLE
@@ -45,6 +56,22 @@
 | **4 riscos jurídicos já mapeados** (revisar c/ advogado) | (a) expulsão por R$1,00 pode ser anulada (STJ); (b) non-compete 24m sem contrapartida; (c) take-rate + sócio-médico operando = zona cinzenta vínculo trabalhista; (d) **pool 20% em Tesouraria de LTDA pode ser recusado pela Junta** (CC não prevê quotas próprias em LTDA) |
 
 → **Item pro Paulo + advogado:** o pool de Tesouraria em LTDA (item d) e o regime de pró-labore.
+
+---
+
+## 3b. 🔑 CESSÃO DE IP POR SÓCIO — o que cada um cede/licencia (Cláusula 2 do acordo)
+**O capital das cotas é lastreado em ATIVOS INTANGÍVEIS transferidos ao CNPJ** (não é só dinheiro). Modelo **MISTO**: cessão p/ técnico, licença + autoria moral p/ clínico. 4 termos anexos (A.1–A.4), redação final com advogado de PI + saúde.
+
+| Sócio | Ativo | Regime | O que fica preservado |
+|---|---|---|---|
+| **Pedro (2.1)** | Código, schema, pipeline (infra técnica) | **CESSÃO INTEGRAL** à Sociedade | natureza tecnológica não-autoral pessoal → cede 100% *(Anexo A.1)* |
+| **Ricardo (2.2)** | Método **AEC / IMRE** + derivados (clínico) | **LICENÇA EXCLUSIVA** à Sociedade | (a) **autoria moral inalienável** (AEC/IMRE sempre atribuídos a Ricardo, dentro e fora da plataforma); (b) titularidade acadêmica (publicar/ensinar); (c) uso clínico/formativo próprio. Exclusiva só vs concorrentes diretos na vigência + non-compete *(Anexo A.2)* |
+| **Ricardo + Eduardo (2.3)** | Ativos educacionais (cursos) | **Licença co-titular 50/50** | mesmas premissas da 2.2 *(Anexo A.3)* |
+| **Todos os 4 (2.4)** | Marca **MedCannLab / Nôa Esperança** / branding | **CESSÃO DEFINITIVA** à Sociedade | "Método AEC" como **nome do método** segue licenciado a Ricardo (autoria moral); a marca registrada é da Sociedade *(Anexo A.4)* |
+
+**🟡 Ponto a alinhar na reunião (autoria do Pedro — simétrico ao do Ricardo):** a Cláusula 2.1 trata TODO o aporte do Pedro como "técnico não-autoral → cessão". Mas a **arquitetura de governança cognitiva** (pirâmide de 8 camadas, COS, *"GPT é o último a falar e o primeiro a ser checado"*, defesa em profundidade) é **MÉTODO autoral** — não só código. Sugestão: **desmembrar a 2.1** em (a) infra técnica → cessão **+** (b) **governança cognitiva → mesmo regime da 2.2 (licença + autoria moral do Pedro)**. São **domínios distintos e complementares** (Ricardo = clínica; Pedro = governança cognitiva), **ambos autorais**. *Decisão dos sócios + advogado de PI.*
+
+**Princípio que protege TODOS (e facilita pro Paulo entender o desenho):** a **autoria (moral)** fica com o autor pra sempre; o **uso (econômico)** é cedido perpétuo/irrevogável à empresa. Resultado: **nenhum sócio sozinho "tira e mata" a empresa**, e nenhum autor perde seu legado. É o que torna o cap table defensável.
 
 ---
 
@@ -100,7 +127,8 @@
 1. **Regime tributário** — Simples Nacional Anexo III (Fator R) é o melhor? Confirmar.
 2. **Capital social** — qual valor nominal registrar?
 3. **Enquadramento fiscal** do duplo-canal (SaaS + intermediação) — como faturar relatório vs split de consulta.
-4. **CNPJ** — status do protocolo (data D 10/06), CNAEs corretos (tecnologia/saúde).
+4. **CNPJ + CNAEs** — status do protocolo (data D 10/06); confirmar os **CNAEs candidatos** (seção 1 — principal **63.11-9/00 SaaS**; **evitar 86.xx saúde** pra preservar a tese fiscal).
+4b. **Cessão de IP** (seção 3b) — confirmar que o capital é lastreado em ativos intangíveis (cessão técnica + licença clínica c/ autoria moral) e alinhar o desmembramento da 2.1 (governança cognitiva do Pedro = autoral).
 5. **Custo de abertura** — confirmar R$ 1.400 (R$ 350/sócio) + Pix na quarta com contador presente.
 6. **Acordo de quotistas** — Paulo revisar os 4 riscos jurídicos (esp. pool Tesouraria em LTDA) antes da assinatura dos 4 sócios.
 7. **Pró-labore** — como tratar (sem salário fixo pré-breakeven).
