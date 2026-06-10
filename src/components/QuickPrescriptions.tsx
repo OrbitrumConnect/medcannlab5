@@ -361,7 +361,18 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
           professional_id: user?.id,
           professional_name: user?.name || 'Profissional',
-          professional_crm: (user as any)?.crm || '',
+          // V1.9.637 (10/06 reuniao Pedro+Ricardo+Paulo) - fallback defensivo
+          // Audit empirico revelou que medicos cadastraram CRM em campos diferentes
+          // dependendo da versao do UI da Vitrine:
+          // - Ricardo (apos V1.9.x): users.crm = '5253203-7' (correto)
+          // - Eduardo: users.council_state = '52509446' (campo de UF, mas numero ali)
+          // - Ana Beatriz (CRO): users.council_number = '44343' + council_state='RJ' + council_type='CRO' (correto separado)
+          // Fallback: crm -> council_number -> council_state. Aditivo (so adiciona caminhos),
+          // ZERO regressao: se algum campo populado, pega; se todos vazios, fica '' como antes.
+          professional_crm: (user as any)?.crm
+                         || (user as any)?.council_number
+                         || (user as any)?.council_state
+                         || '',
           medications: medicationsPayload,
           status: 'draft',
           notes: notesPayload,
