@@ -38,7 +38,8 @@ interface Medication {
 
 interface Prescription {
   id: string
-  prescription_type: 'simple' | 'special' | 'blue' | 'yellow'
+  prescription_type: 'simple' | 'special' | 'blue' | 'yellow' | 'attestation'
+  notes?: string
   patient_id?: string
   patient_name: string
   patient_cpf?: string
@@ -716,6 +717,136 @@ const Prescriptions: React.FC = () => {
     }, 500)
   }
 
+  // V1.9.635 HOTFIX (10/06 16h BRT) — template ATESTADO MEDICO dedicado.
+  // Causa-raiz: o template padrao renderiza `notes` SO dentro do loop de
+  // medications.map() (linha ~822). Atestado tem medications=[] -> .map() nao roda
+  // -> notes nao renderiza -> PDF saiu vazio. Bug urgente: Ricardo emitiu atestado
+  // 90d afastamento pra paciente (CID F41.2+F41.1) e PDF saiu sem corpo.
+  // Fix: branch dedicado, cabeçalho "ATESTADO MÉDICO", body=notes (white-space preserved),
+  // SEM medication-list. Signature box + QR + footer iguais (zero regressao).
+  const handlePrintAttestation = (prescription: Prescription) => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      toast.warning('Pop-ups bloqueado', 'Permita pop-ups para visualizar o atestado.')
+      return
+    }
+
+    const date = new Date(prescription.created_at).toLocaleDateString('pt-BR')
+    const time = new Date(prescription.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    const notesText = (prescription as any).notes || ''
+    const crmText = prescription.professional_crm && prescription.professional_crm.trim().length > 0
+      ? prescription.professional_crm
+      : '<span style="color:#cc0000;font-size:11px;">(CRM não cadastrado — preencher no perfil profissional)</span>'
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Atestado Médico - ${prescription.patient_name}</title>
+        <style>
+          @page { size: A4; margin: 2cm; }
+          body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; max-width: 21cm; margin: 0 auto; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #00C16A; padding-bottom: 15px; }
+          .doctor-info { font-size: 14px; color: #666; }
+          .title { text-align: center; font-size: 24px; font-weight: bold; margin: 30px 0; text-transform: uppercase; color: #000; letter-spacing: 2px; }
+          .patient-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #eee; }
+          .patient-name { font-size: 18px; font-weight: bold; }
+          .attestation-body {
+            margin: 30px 0;
+            font-size: 14px;
+            line-height: 1.8;
+            text-align: justify;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+          }
+          .signature-box { margin-top: 50px; text-align: center; page-break-inside: avoid; }
+          .digital-signature { border: 2px solid #00C16A; padding: 15px; display: inline-block; border-radius: 8px; background: #f0fdf4; width: 100%; }
+          .ds-title { color: #00C16A; font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+          .qr-section { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 20px; }
+          .footer { margin-top: 40px; font-size: 10px; text-align: center; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+          .watermark {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px; height: 500px;
+            background-image: url('${window.location.origin}/brain.png');
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            opacity: 0.06; z-index: -1; pointer-events: none;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="watermark"></div>
+        <div class="header">
+          <h1 style="color: #00C16A; margin:0;">MEDCANNLAB</h1>
+          <div class="doctor-info">
+            <strong>Dr(a). ${prescription.professional_name}</strong><br>
+            CRM: ${crmText} ${prescription.professional_specialty ? `• ${prescription.professional_specialty}` : ''}
+          </div>
+        </div>
+
+        <div class="title">Atestado Médico</div>
+
+        <div class="patient-box">
+          <div style="font-size: 12px; color: #666; margin-bottom: 4px;">PACIENTE</div>
+          <div class="patient-name">${prescription.patient_name}</div>
+          <div style="font-size: 12px; margin-top: 4px;">
+            ${prescription.patient_cpf ? `CPF: ${prescription.patient_cpf}` : ''}
+            ${prescription.patient_email ? `• Email: ${prescription.patient_email}` : ''}
+          </div>
+        </div>
+
+        <div class="attestation-body">${notesText
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')}</div>
+
+        ${prescription.status === 'signed' || prescription.status === 'sent' ? `
+          <div class="signature-box">
+            <div class="digital-signature">
+              <div class="ds-title">DOCUMENTO ASSINADO DIGITALMENTE</div>
+              <div>Dr(a). ${prescription.professional_name}</div>
+              <div style="font-size: 12px; margin-top: 5px;">Data: ${new Date(prescription.signature_timestamp || prescription.created_at).toLocaleString('pt-BR')}</div>
+              <div style="margin-top: 15px; border-top: 1px dashed #00C16A; padding-top: 10px;">
+                <div style="font-size: 12px; font-weight: bold;">VALIDAÇÃO ICP-BRASIL / ITI</div>
+                <div style="font-size: 12px;">Chave: ${prescription.iti_validation_code || 'AGUARDANDO-PROCESSAMENTO-ITI'}</div>
+              </div>
+            </div>
+          </div>
+          <div class="qr-section">
+            <div style="border: 1px solid #ccc; padding: 5px; display: inline-block;">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(prescription.iti_validation_url || window.location.href)}" alt="QR Code Validação" width="100" />
+            </div>
+            <div style="text-align: left; font-size: 12px;">
+              <strong>Para validar este documento:</strong><br>
+              1. Acesse o portal do ITI ou aponte a câmera<br>
+              2. Digite o código: <strong>${prescription.iti_validation_code || ''}</strong><br>
+              3. Verifique a autenticidade da assinatura
+            </div>
+          </div>
+        ` : `
+          <div class="signature-box">
+            <div style="border-top: 1px solid #333; width: 60%; margin: 0 auto; padding-top: 10px;">
+              Dr(a). ${prescription.professional_name}<br>
+              CRM: ${prescription.professional_crm || '___________'}<br>
+              (Assinatura Manual ou Aguardando Assinatura Digital)
+            </div>
+          </div>
+        `}
+
+        <div class="footer">
+          Emissão: ${date} às ${time} • MedCannLab Platform • ID: ${prescription.id}<br>
+          Este documento foi gerado eletronicamente e sua validade jurídica é garantida pela MP 2.200-2/2001.
+        </div>
+      </body>
+      </html>
+    `
+
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => { printWindow.print() }, 500)
+  }
+
   const handlePrintPrescription = (prescription: Prescription) => {
     // V1.9.119: Receita Controle Especial usa layout ANVISA dedicado (com mini-alerta educativo)
     if (prescription.prescription_type === 'special') {
@@ -728,6 +859,17 @@ const Prescriptions: React.FC = () => {
       )
       if (!proceed) return
       handlePrintAnvisaSpecial(prescription)
+      return
+    }
+
+    // V1.9.635 HOTFIX - 10/06 16h BRT - ATESTADO MEDICO template dedicado
+    // Bug urgente: Ricardo emitiu atestado pra Alexandre Magno Steglich, PDF saiu
+    // como "Receituario Medico" com corpo VAZIO (notes nao renderizava porque estava
+    // dentro do loop de medications - medications=[] no atestado = loop nao roda).
+    // Conteudo do atestado (3KB texto F41.2+F41.1 + 90d afastamento) estava 100% no
+    // banco em cfm_prescriptions.notes mas o template nao renderizou.
+    if (prescription.prescription_type === 'attestation') {
+      handlePrintAttestation(prescription)
       return
     }
 
