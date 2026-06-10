@@ -14,6 +14,13 @@ interface User {
   name: string
   crm?: string
   cro?: string
+  // V1.9.639 (10/06 reuniao Pedro+Ricardo+Paulo) - 3 campos novos do schema split de conselho
+  // (CRM/CRO/COREN/CRF etc). Vitrine grava em council_*. Atestado/prescription
+  // le via fallback `crm || council_number || council_state` em QuickPrescriptions.tsx
+  council_type?: string
+  council_state?: string
+  council_number?: string
+  specialty?: string
   phone?: string
   location?: string
   bio?: string
@@ -72,6 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let dbTrialEndsAt: string | null = null
     let dbConsentAcceptedAt: string | null = null
     let dbOnboardingCompletedAt: string | null = null
+    // V1.9.639: conselho profissional do banco (Vitrine grava aqui)
+    let dbCrm: string | null = null
+    let dbCro: string | null = null
+    let dbCouncilType: string | null = null
+    let dbCouncilState: string | null = null
+    let dbCouncilNumber: string | null = null
+    let dbSpecialty: string | null = null
     const email = authUser.email || ''
 
     // Fallback de nome a partir dos metadados
@@ -126,10 +140,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userType = 'paciente'
       }
 
-      // 2) Dados do usuário (display + cobrança)
+      // 2) Dados do usuário (display + cobrança + conselho profissional)
+      // V1.9.639: adicionados crm, cro, council_type, council_state, council_number,
+      // specialty pra o frontend de prescription/atestado puxar do banco (era so de
+      // authUser.user_metadata.crm antes - vazio pra quem cadastrou via Vitrine).
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('name, email, payment_status, trial_ends_at, consent_accepted_at, onboarding_completed_at')
+        .select('name, email, payment_status, trial_ends_at, consent_accepted_at, onboarding_completed_at, crm, cro, council_type, council_state, council_number, specialty')
         .eq('id', authUser.id)
         .maybeSingle()
 
@@ -147,6 +164,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if ((userData as any).onboarding_completed_at) {
           dbOnboardingCompletedAt = (userData as any).onboarding_completed_at
         }
+        // V1.9.639: capturar campos de conselho profissional (Vitrine -> users)
+        if ((userData as any).crm) dbCrm = (userData as any).crm
+        if ((userData as any).cro) dbCro = (userData as any).cro
+        if ((userData as any).council_type) dbCouncilType = (userData as any).council_type
+        if ((userData as any).council_state) dbCouncilState = (userData as any).council_state
+        if ((userData as any).council_number) dbCouncilNumber = (userData as any).council_number
+        if ((userData as any).specialty) dbSpecialty = (userData as any).specialty
       } else if (userError && !(userError?.message?.includes('infinite recursion'))) {
         console.warn('⚠️ Erro ao buscar dados do usuário na tabela users:', userError)
       }
@@ -183,8 +207,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: email,
       type: userType, // Sempre em português
       name: userName,
-      crm: authUser.user_metadata?.crm,
-      cro: authUser.user_metadata?.cro,
+      // V1.9.639: prioridade banco (Vitrine cadastrou la) -> auth.user_metadata (legado)
+      crm: dbCrm || authUser.user_metadata?.crm,
+      cro: dbCro || authUser.user_metadata?.cro,
+      council_type: dbCouncilType || undefined,
+      council_state: dbCouncilState || undefined,
+      council_number: dbCouncilNumber || undefined,
+      specialty: dbSpecialty || undefined,
       payment_status: paymentStatus,
       trial_ends_at: trialEndsAt,
       consent_accepted_at: dbConsentAcceptedAt,
