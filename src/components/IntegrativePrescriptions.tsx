@@ -7,6 +7,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  FileCheck,
   FileText,
   Heart,
   Loader2,
@@ -200,42 +201,61 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
     setPrescriptionsLoading(true)
     setPrescriptionsError(null)
     try {
+      // V1.9.641 (10/06 ~21h BRT) - migra leitura de patient_prescriptions (0 rows,
+      // tabela orfã do mundo integrativo) para cfm_prescriptions (63 rows reais
+      // incluindo atestados do Ricardo). Sem regressao: patient_prescriptions estava
+      // vazia. Ganho: aba "Prescrição" do Prontuário passa a listar todos os
+      // documentos ja emitidos pelo medico (receitas + atestados).
       const { data, error } = await supabase
-        .from('patient_prescriptions')
-        .select(
-          `
-          *,
-          template:integrative_prescription_templates (id, name, rationality, summary),
-          plan:patient_therapeutic_plans (id, title, status)
-        `
-        )
+        .from('cfm_prescriptions')
+        .select('*')
         .eq('patient_id', patientId)
-        .order('issued_at', { ascending: false })
+        .order('created_at', { ascending: false })
 
       if (error) {
         throw error
       }
 
       const mapped: PatientPrescription[] =
-        data?.map(entry => ({
-          id: entry.id,
-          title: entry.title ?? entry.template?.name ?? 'Prescrição integrativa',
-          summary: entry.summary ?? entry.template?.summary ?? null,
-          rationality: (entry.rationality ?? entry.template?.rationality ?? null) as Rationality | null,
-          dosage: entry.dosage ?? null,
-          frequency: entry.frequency ?? null,
-          duration: entry.duration ?? null,
-          instructions: entry.instructions ?? null,
-          indications: entry.indications ?? [],
-          status: entry.status ?? 'active',
-          issuedAt: entry.issued_at,
-          startsAt: entry.starts_at ?? null,
-          endsAt: entry.ends_at ?? null,
-          lastReviewedAt: entry.last_reviewed_at ?? null,
-          professionalName: null,
-          templateName: entry.template?.name ?? null,
-          planTitle: entry.plan?.title ?? null
-        })) ?? []
+        data?.map((entry: any) => {
+          const meds = Array.isArray(entry.medications) ? entry.medications : []
+          const firstMed = meds[0] || {}
+          const isAttestation = entry.prescription_type === 'attestation'
+          const typeLabel = isAttestation
+            ? 'Atestado Médico'
+            : entry.prescription_type === 'special'
+              ? 'Receita Branca (C2)'
+              : entry.prescription_type === 'blue'
+                ? 'Receita Azul (B1/B2)'
+                : entry.prescription_type === 'yellow'
+                  ? 'Receita Amarela (A1-A3)'
+                  : 'Receita Simples'
+          const title = isAttestation
+            ? 'Atestado Médico'
+            : firstMed.name || typeLabel
+          const summary = isAttestation
+            ? (entry.notes ? String(entry.notes).slice(0, 160) : null)
+            : typeLabel
+          return {
+            id: entry.id,
+            title,
+            summary,
+            rationality: null,
+            dosage: firstMed.dosage ?? null,
+            frequency: firstMed.frequency ?? null,
+            duration: firstMed.duration ?? null,
+            instructions: entry.notes ?? firstMed.instructions ?? null,
+            indications: [],
+            status: entry.status === 'signed' ? 'active' : (entry.status ?? 'draft'),
+            issuedAt: entry.created_at,
+            startsAt: null,
+            endsAt: entry.expires_at ?? null,
+            lastReviewedAt: entry.signature_timestamp ?? null,
+            professionalName: entry.professional_name ?? null,
+            templateName: typeLabel,
+            planTitle: null
+          }
+        }) ?? []
 
       setPatientPrescriptions(mapped)
     } catch (error) {
@@ -518,7 +538,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Nova receita</h3>
                 <span className="text-[10px] text-slate-500 italic">— clique no tipo de receituário</span>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                 <button
                   onClick={() => navigate('/app/prescriptions?type=simple')}
                   title="Receituário Simples — Medicamentos sem controle especial"
@@ -569,6 +589,21 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                   <div className="min-w-0">
                     <p className="text-white font-bold text-sm leading-tight truncate">Amarela (A1-A3)</p>
                     <p className="text-[11px] text-slate-400 leading-tight truncate">restrito ITI</p>
+                  </div>
+                </button>
+                {/* V1.9.641 - 5o card Atestado Medico (Ricardo 10/06: precisava emitir
+                    atestado pelo Prontuario, nao so pelo Workstation) */}
+                <button
+                  onClick={() => navigate('/app/prescriptions?type=attestation')}
+                  title="Atestado Médico — Afastamento/comparecimento com assinatura ICP-Brasil"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <FileCheck className="w-5 h-5 text-purple-300" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white font-bold text-sm leading-tight truncate">Atestado</p>
+                    <p className="text-[11px] text-slate-400 leading-tight truncate">afastamento</p>
                   </div>
                 </button>
               </div>
