@@ -272,8 +272,18 @@ const Prescriptions: React.FC = () => {
         digital_signature: p.digital_signature,
         signature_timestamp: p.signature_timestamp,
         created_at: p.created_at,
-        expires_at: p.expires_at
-      }))
+        expires_at: p.expires_at,
+        // V1.9.636 HOTFIX - 10/06 ~17h BRT - bug pre-existente: campo `notes` nao
+        // era mapeado do banco -> frontend recebia undefined -> template atestado
+        // V1.9.635 ficava com body vazio (notes era o body do atestado). Ricardo
+        // emitiu atestado 2153 chars perfeitos no banco mas PDF saia sem texto.
+        // Adicionar este campo NAO causa regressao: template antigo das prescricoes
+        // simple/blue/yellow ja tentava usar (prescription as any)['notes'] na
+        // linha 822 mas era sempre undefined (falsy) -> nunca renderizava nada.
+        // Agora prescricoes COM notes preenchido vao mostrar "Obs:" no item
+        // (comportamento que codigo ja antecipava). Atestado: corrige bug.
+        notes: p.notes
+      } as Prescription))
 
       setPrescriptions(formattedPrescriptions)
     } catch (err) {
