@@ -148,6 +148,10 @@ const PatientAppointments: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showAssessmentModal, setShowAssessmentModal] = useState(false)
+  // V1.9.634 — modal de ESCOLHA ao clicar "Vincular": AEC ou vínculo direto.
+  const [vincularChoice, setVincularChoice] = useState<{ profId: string; name: string; specialty: string } | null>(null)
+  // V1.9.634 — alvo do modal de confirmação "Desvincular".
+  const [desvincularTarget, setDesvincularTarget] = useState<{ profId: string; name: string } | null>(null)
   const [selectedProfessional, setSelectedProfessional] = useState<{ name: string, specialty: string } | null>(null)
   const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>('2135f0c0-eb5a-43b1-bc00-5f8dfea13561')
   const [professionalQuery, setProfessionalQuery] = useState('')
@@ -1001,6 +1005,35 @@ const PatientAppointments: React.FC = () => {
     }
   }
 
+  // V1.9.634 — Desfazer o vínculo de cuidado leve (self_link). RLS permite o paciente
+  // deletar a própria linha (USING patient_id = auth.uid()). Remove só patient_professional_links
+  // do tipo criado pelo paciente — não toca consulta/AEC.
+  const handleDesvincularMedico = async (professionalId: string, professionalName: string) => {
+    if (!user?.id) {
+      toast.error('Sessão expirada', 'Faça login novamente.')
+      return
+    }
+    try {
+      const { error } = await (supabase as any)
+        .from('patient_professional_links')
+        .delete()
+        .eq('patient_id', user.id)
+        .eq('professional_id', professionalId)
+        .eq('source', 'self_link')
+      if (error) throw error
+      setVinculoLinkedSet(prev => {
+        const next = new Set(prev)
+        next.delete(professionalId)
+        return next
+      })
+      setDesvincularTarget(null)
+      toast.success('Vínculo desfeito', `Você não está mais vinculado a ${professionalName}. Pode vincular de novo quando quiser.`)
+    } catch (err: any) {
+      console.error('Erro ao desvincular médico:', err)
+      toast.error('Não foi possível desvincular', err.message || 'Tente novamente.')
+    }
+  }
+
   // Função para cancelar agendamento (Trigger Modal)
   const handleCancelAppointment = (appointment: any) => { // Alterado para receber objeto
     setCancelTargetApt(appointment)
@@ -1412,13 +1445,13 @@ const PatientAppointments: React.FC = () => {
               : SPECIALTY_PROF_IDS[professional.specialty] || '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
             setSelectedProfessionalId(resolvedProfId)
 
-            // V1.9.633 — Verde (já vinculado) → agendar consulta. Não-verde → criar
-            // vínculo de cuidado leve (sem forçar AEC/agendamento).
+            // V1.9.633 — Verde (já vinculado) → agendar consulta.
+            // V1.9.634 — Não-verde → modal de ESCOLHA (AEC ou vínculo direto).
             if (vinculo?.status === 'green') {
               setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
               setShowAppointmentModal(true)
             } else {
-              handleVincularMedico(resolvedProfId, professional.name)
+              setVincularChoice({ profId: resolvedProfId, name: professional.name, specialty: professional.specialty })
             }
           }}
           className={`w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
@@ -1433,6 +1466,29 @@ const PatientAppointments: React.FC = () => {
           <ArrowRight className="w-3 h-3" />
         </button>
       </div>
+      {/* V1.9.634 — Desvincular: só pra vínculo que o próprio paciente criou (self_link).
+          Honra o consentimento ("desfazer a qualquer momento"). Não aparece pra vínculo
+          via consulta/AEC (esse desfaz-se cancelando a consulta). */}
+      {vinculo?.status === 'green' && vinculo?.source === 'self_link' && (
+        <button
+          type="button"
+          onClick={() => {
+            const SPECIALTY_PROF_IDS: Record<string, string> = {
+              'Neurologia': 'f4a62265-8982-44db-8282-78129c4d014a',
+              'Nefrologia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+              'Homeopatia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+            }
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+            const resolvedProfId = uuidRegex.test(professional.id)
+              ? professional.id
+              : SPECIALTY_PROF_IDS[professional.specialty] || ''
+            if (resolvedProfId) setDesvincularTarget({ profId: resolvedProfId, name: professional.name })
+          }}
+          className="w-full mt-1.5 text-[10px] text-slate-500 hover:text-rose-300 transition-colors"
+        >
+          Desvincular
+        </button>
+      )}
     </motion.div>
     )
   }
@@ -1566,6 +1622,132 @@ const PatientAppointments: React.FC = () => {
             })
           }}
         />
+
+        {/* V1.9.634 — Modal de ESCOLHA ao clicar "Vincular": AEC ou vínculo direto.
+            Resolve: antes o botão vinculava silenciosamente. Agora o paciente decide
+            (e a linha de consentimento deixa explícito o acesso que o médico ganha). */}
+        {vincularChoice && (() => {
+          const TITLE_PREFIXES = ['Dr.', 'Dra.', 'Prof.', 'Profa.', 'Sr.', 'Sra.']
+          const parts = vincularChoice.name.trim().split(/\s+/)
+          const firstName = TITLE_PREFIXES.includes(parts[0]) && parts.length > 1 ? parts[1] : parts[0]
+          return (
+            <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+              <div className="bg-slate-900 w-full max-w-md sm:rounded-2xl rounded-t-2xl border-t sm:border border-slate-700/50 shadow-2xl flex flex-col animate-in slide-in-from-bottom-5 duration-300">
+                <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50 sm:rounded-t-2xl">
+                  <div>
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                      <Stethoscope className="w-5 h-5 text-emerald-400" />
+                      Vincular a {vincularChoice.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">Como você quer começar?</p>
+                  </div>
+                  <button onClick={() => setVincularChoice(null)} className="text-slate-400 hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  {/* Opção 1 — Vincular agora (direto) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const c = vincularChoice
+                      setVincularChoice(null)
+                      handleVincularMedico(c.profId, c.name)
+                    }}
+                    className="w-full text-left rounded-xl border border-emerald-500/40 bg-emerald-500/[0.08] hover:bg-emerald-500/[0.14] hover:border-emerald-400/60 transition-all p-4 group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                        <Stethoscope className="w-5 h-5 text-emerald-300" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-semibold text-emerald-200">Vincular agora</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-emerald-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed mt-1">
+                          Estabelece o vínculo com {firstName} agora. Ele passa a acompanhar você —
+                          pode enviar prescrições e trocar material. A avaliação e a consulta ficam livres pra quando você quiser.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Opção 2 — Fazer uma AEC */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const c = vincularChoice
+                      setVincularChoice(null)
+                      navigate('/app/clinica/paciente/chat-noa', {
+                        state: {
+                          startAssessment: true,
+                          targetProfessional: { name: c.name, specialty: c.specialty, id: c.profId }
+                        }
+                      })
+                    }}
+                    className="w-full text-left rounded-xl border border-slate-700/60 bg-slate-800/40 hover:bg-slate-800/70 hover:border-slate-600 transition-all p-4 group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-slate-700/40 border border-slate-600/40 flex items-center justify-center shrink-0">
+                        <Brain className="w-5 h-5 text-slate-200" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-semibold text-slate-100">Fazer uma avaliação (AEC)</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                        <p className="text-xs text-slate-400 leading-relaxed mt-1">
+                          Conte sua história à Nôa. {firstName} recebe suas informações organizadas
+                          e, ao final, você poderá agendar a consulta com ele.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Consentimento explícito (LGPD) — deixa claro o compartilhamento do histórico do app */}
+                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/[0.05] p-3 mt-1">
+                    <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                      🔒 Ao vincular, você <strong className="text-amber-100">compartilha seu histórico clínico no app</strong> (avaliações,
+                      relatórios e exames) com {firstName}, que poderá acompanhá-lo e te enviar mensagens.
+                      Você pode <strong className="text-amber-100">desfazer o vínculo a qualquer momento</strong>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* V1.9.634 — Confirmação de Desvincular */}
+        {desvincularTarget && (
+          <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-slate-900 w-full max-w-sm sm:rounded-2xl rounded-t-2xl border-t sm:border border-slate-700/50 shadow-2xl animate-in slide-in-from-bottom-5 duration-300 p-5">
+              <h3 className="text-base font-bold text-white mb-1.5">Desvincular de {desvincularTarget.name}?</h3>
+              <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                Você deixa de compartilhar seu histórico clínico com {desvincularTarget.name} e ele não te acompanha mais pelo app.
+                Suas consultas e avaliações já feitas não são apagadas. Você pode vincular de novo quando quiser.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDesvincularTarget(null)}
+                  className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDesvincularMedico(desvincularTarget.profId, desvincularTarget.name)}
+                  className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold text-rose-200 border border-rose-500/40 bg-rose-500/[0.08] hover:bg-rose-500/[0.16] transition-colors"
+                >
+                  Desvincular
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal Inteligente de Reagendamento */}
         {showRescheduleModal && (
@@ -2179,13 +2361,14 @@ const PatientAppointments: React.FC = () => {
                     onClick={() => {
                       const professional = profileProfessional
                       const v = computeProfessionalVinculo(professional)
-                      // V1.9.633 — Verde (já vinculado) → agendar. Não-verde → criar vínculo leve.
+                      // V1.9.633 — Verde (já vinculado) → agendar.
                       if (v?.status === 'green') {
                         setProfileProfessional(null)
                         setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
                         setShowAppointmentModal(true)
                         return
                       }
+                      // V1.9.634 — Não-verde → modal de ESCOLHA (AEC ou vínculo direto).
                       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
                       const SPECIALTY_PROF_IDS: Record<string, string> = {
                         'Neurologia': 'f4a62265-8982-44db-8282-78129c4d014a',
@@ -2195,7 +2378,8 @@ const PatientAppointments: React.FC = () => {
                       const resolvedProfId = uuidRegex.test(professional.id)
                         ? professional.id
                         : SPECIALTY_PROF_IDS[professional.specialty] || '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
-                      handleVincularMedico(resolvedProfId, professional.name)
+                      setProfileProfessional(null)
+                      setVincularChoice({ profId: resolvedProfId, name: professional.name, specialty: professional.specialty })
                     }}
                     className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${profileProfessional.buttonClasses}`}
                   >
