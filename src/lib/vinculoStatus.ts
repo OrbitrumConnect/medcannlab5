@@ -24,7 +24,7 @@
  */
 
 export type VinculoStatus = 'green' | 'yellow' | 'red'
-export type VinculoSource = 'appointment' | 'direct_invite' | 'network' | 'none'
+export type VinculoSource = 'appointment' | 'self_link' | 'direct_invite' | 'network' | 'none'
 
 export interface VinculoStatusInput {
   /** Professional sendo avaliado (UUID do card). */
@@ -35,6 +35,12 @@ export interface VinculoStatusInput {
   appointmentsSet: Set<string>
   /** Set/Map de professional_ids que estão na equipe ativa do invited_by. */
   careNetworkSet: Set<string>
+  /**
+   * V1.9.633 — Set de professional_ids com quem o paciente tem VÍNCULO DE
+   * CUIDADO leve (patient_professional_links, criado via "Vincular" sem AEC/
+   * agendamento). Opcional pra não quebrar callers antigos (zero regressão).
+   */
+  linkedSet?: Set<string>
 }
 
 export interface VinculoStatusOutput {
@@ -46,17 +52,24 @@ export interface VinculoStatusOutput {
 
 const TOOLTIPS: Record<VinculoSource, string> = {
   appointment: 'Vínculo ativo — você já consultou ou tem consulta marcada com este profissional.',
+  self_link: 'Vínculo de cuidado ativo — você se vinculou a este profissional. Ele pode acompanhar seu prontuário e enviar prescrições. Você pode iniciar uma avaliação ou agendar quando quiser.',
   direct_invite: 'Seu profissional de referência — você se cadastrou pela indicação dele(a).',
   network: 'Membro da rede de cuidado do seu profissional de referência. Pode marcar consulta com confiança.',
   none: 'Sem vínculo ainda — você pode escolher este profissional pra iniciar acompanhamento.',
 }
 
 export function getVinculoStatus(input: VinculoStatusInput): VinculoStatusOutput {
-  const { professionalId, invitedBy, appointmentsSet, careNetworkSet } = input
+  const { professionalId, invitedBy, appointmentsSet, careNetworkSet, linkedSet } = input
 
   // 1) Verde via appointment — evidência empírica máxima
   if (appointmentsSet.has(professionalId)) {
     return { status: 'green', source: 'appointment', tooltip: TOOLTIPS.appointment }
+  }
+
+  // 1.5) V1.9.633 — Verde via vínculo de cuidado explícito (patient_professional_links).
+  // Paciente clicou "Vincular" sem AEC/agendamento. Evidência de relação ativa.
+  if (linkedSet?.has(professionalId)) {
+    return { status: 'green', source: 'self_link', tooltip: TOOLTIPS.self_link }
   }
 
   // 2) Verde via indicação direta — paciente cadastrou-se pelo link DESTE profissional

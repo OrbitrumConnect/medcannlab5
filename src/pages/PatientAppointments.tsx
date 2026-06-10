@@ -465,6 +465,8 @@ const PatientAppointments: React.FC = () => {
   const [vinculoInvitedBy, setVinculoInvitedBy] = useState<string | null>(null)
   const [vinculoAppointmentsSet, setVinculoAppointmentsSet] = useState<Set<string>>(new Set())
   const [vinculoCareNetworkSet, setVinculoCareNetworkSet] = useState<Set<string>>(new Set())
+  // V1.9.633 — vínculos de cuidado leves (patient_professional_links, criados via "Vincular")
+  const [vinculoLinkedSet, setVinculoLinkedSet] = useState<Set<string>>(new Set())
 
   // V1.9.272 — Carregar maps de vínculo (zero migration, lê schema existente)
   useEffect(() => {
@@ -492,6 +494,18 @@ const PatientAppointments: React.FC = () => {
             .filter((id: string | null): id is string => !!id)
         )
         setVinculoAppointmentsSet(apptsSet)
+
+        // (2.5) V1.9.633 — vínculos de cuidado leves (patient_professional_links).
+        // Paciente que clicou "Vincular" sem AEC/agendamento aparece verde aqui.
+        const { data: links } = await (supabase as any)
+          .from('patient_professional_links')
+          .select('professional_id')
+          .eq('patient_id', user.id)
+        setVinculoLinkedSet(new Set<string>(
+          (links || [])
+            .map((l: any) => l.professional_id)
+            .filter((id: string | null): id is string => !!id)
+        ))
 
         // (3) rede de cuidado: profissionais que o invited_by tem na equipe ATIVA
         if (invitedBy) {
@@ -959,6 +973,34 @@ const PatientAppointments: React.FC = () => {
     }
   }
 
+  // V1.9.633 — Vincular-se a um médico SEM AEC e SEM agendamento.
+  // "Vínculo ≠ Agendamento ≠ AEC": cria patient_professional_links (source='self_link')
+  // via RPC SECURITY DEFINER. Médico passa a ver o paciente em Meus Pacientes (getAllPatients
+  // já faz UNION dessa tabela) → pode prescrever / trocar material. AEC e consulta ficam
+  // livres pra depois. Caso Alexandre Magno Steglich (10/06).
+  const handleVincularMedico = async (professionalId: string, professionalName: string) => {
+    if (!user?.id) {
+      toast.error('Sessão expirada', 'Faça login novamente.')
+      return
+    }
+    try {
+      const { error } = await (supabase as any).rpc('vincular_paciente_medico', {
+        p_professional_id: professionalId,
+      })
+      if (error) throw error
+      // Otimista: adiciona ao set → badge vira verde "SEU MÉDICO" na hora
+      setVinculoLinkedSet(prev => new Set(prev).add(professionalId))
+      setProfileProfessional(null)
+      toast.success(
+        'Vínculo criado!',
+        `${professionalName} agora acompanha você. Você pode pedir prescrição, trocar material e, quando quiser, iniciar uma avaliação ou agendar consulta.`
+      )
+    } catch (err: any) {
+      console.error('Erro ao vincular médico:', err)
+      toast.error('Não foi possível vincular', err.message || 'Tente novamente.')
+    }
+  }
+
   // Função para cancelar agendamento (Trigger Modal)
   const handleCancelAppointment = (appointment: any) => { // Alterado para receber objeto
     setCancelTargetApt(appointment)
@@ -1259,6 +1301,7 @@ const PatientAppointments: React.FC = () => {
       invitedBy: vinculoInvitedBy,
       appointmentsSet: vinculoAppointmentsSet,
       careNetworkSet: vinculoCareNetworkSet,
+      linkedSet: vinculoLinkedSet,
     })
   }
 
@@ -1369,12 +1412,13 @@ const PatientAppointments: React.FC = () => {
               : SPECIALTY_PROF_IDS[professional.specialty] || '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
             setSelectedProfessionalId(resolvedProfId)
 
-            if (!carePlan?.id) {
-              setSelectedProfessional({ name: professional.name, specialty: professional.specialty })
-              setShowAssessmentModal(true)
-            } else {
+            // V1.9.633 — Verde (já vinculado) → agendar consulta. Não-verde → criar
+            // vínculo de cuidado leve (sem forçar AEC/agendamento).
+            if (vinculo?.status === 'green') {
               setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
               setShowAppointmentModal(true)
+            } else {
+              handleVincularMedico(resolvedProfId, professional.name)
             }
           }}
           className={`w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
@@ -2134,14 +2178,24 @@ const PatientAppointments: React.FC = () => {
                     type="button"
                     onClick={() => {
                       const professional = profileProfessional
-                      setProfileProfessional(null)
-                      if (!carePlan?.id) {
-                        setSelectedProfessional({ name: professional.name, specialty: professional.specialty })
-                        setShowAssessmentModal(true)
+                      const v = computeProfessionalVinculo(professional)
+                      // V1.9.633 — Verde (já vinculado) → agendar. Não-verde → criar vínculo leve.
+                      if (v?.status === 'green') {
+                        setProfileProfessional(null)
+                        setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
+                        setShowAppointmentModal(true)
                         return
                       }
-                      setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
-                      setShowAppointmentModal(true)
+                      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+                      const SPECIALTY_PROF_IDS: Record<string, string> = {
+                        'Neurologia': 'f4a62265-8982-44db-8282-78129c4d014a',
+                        'Nefrologia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+                        'Homeopatia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+                      }
+                      const resolvedProfId = uuidRegex.test(professional.id)
+                        ? professional.id
+                        : SPECIALTY_PROF_IDS[professional.specialty] || '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
+                      handleVincularMedico(resolvedProfId, professional.name)
                     }}
                     className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${profileProfessional.buttonClasses}`}
                   >
