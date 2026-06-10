@@ -14,10 +14,14 @@
 
 | Nome | Papel | Status na ata |
 |---|---|---|
-| **Pedro Henrique Passos Galluf** | Sócio tech lead / orquestrador COS | Presente, conduziu |
+| **Pedro Henrique Passos Galluf** | Sócio tech lead / orquestrador COS | Presente |
+| **Dr. Ricardo Valença** | Sócio médico / criador AEC / Nefrologia-CKD | Presente |
+| **João Eduardo Vidal** | Sócio institucional / parcerias / regulatório | Presente |
 | **Paulo (contador)** | Contador, tomada de decisão fiscal / Simples Nacional | Presente, ouviu dossiê |
-| **Sr Carlos Valença (?)** | Mencionado na transcrição — papel não confirmado pelos sócios | ⚠️ PENDENTE confirmação Pedro |
-| **Dr Eline (?)** | Mencionado na transcrição — papel não confirmado pelos sócios | ⚠️ PENDENTE confirmação Pedro |
+
+### Sócios NÃO presentes hoje
+
+- **Eduardo Faveret** — não presente reunião CNPJ; segue uso operacional contínuo do app desde 27/05
 
 ### Sessão Claude (laptop paralela)
 
@@ -26,12 +30,6 @@
 | Análise pré-pull | 11 commits desktop V1.9.627-634 absorvidos sem regressão |
 | Cascata bug atestado Ricardo | 7 commits cirúrgicos V1.9.635-641 (5 fixes + memória + diário + Opção D Prontuário) |
 | Validação empírica unit economics | PAT (Supabase Management API) — números cruzados com estimativa Ricardo |
-
-### Sócios mencionados mas NÃO presentes hoje
-
-- **Dr. Ricardo Valença** — interagiu por mensagem operacional (urgência atestado Alexandre Magno Steglich); não esteve na reunião CNPJ
-- **Eduardo Faveret** — não presente reunião CNPJ; uso operacional contínuo do app desde 27/05
-- **João Eduardo Vidal** — sócio institucional, não presente reunião CNPJ de hoje
 
 ---
 
@@ -78,21 +76,14 @@ Estimativa Ricardo (R$122 × 70k DRC) é **vitrine narrativa** (anchor Sociedade
 
 ## 3. O QUE FOI FALADO E NÃO REGISTRADO COMO DECISÃO
 
-### 3.1. Mencionado mas pendente confirmação
-
-- **Sr Carlos Valença (?)** — papel ainda não cristalizado (contador adjunto? advogado? parente próximo de Ricardo?)
-- **Dr Eline (?)** — papel ainda não cristalizado (advogado societário? advogado saúde digital?)
-
-> **AÇÃO Pedro:** confirmar nominalmente quem são essas duas figuras e qual o papel atribuído antes de promover qualquer documento societário oficial.
-
-### 3.2. Mencionado mas NÃO fechado hoje
+### 3.1. Mencionado mas NÃO fechado hoje
 
 - **Stripe Connect vs Mercado Pago Marketplace** — apresentadas as 2 opções com trade-offs; decisão final adiada (Paulo sugeriu validar com banco que opera a conta CNPJ)
 - **Cronograma de implementação Stripe gate hard** — depende CNPJ ativo + conta bancária PJ + integração Stripe Connect; estimativa Pedro 2-4 semanas pós-CNPJ
 - **Pricing final R$122** — Ricardo cravou como anchor; ainda não validado externamente com paciente externo pagante
 - **Marco 2 (médico independente real)** — não tocado profundamente na reunião; segue como pré-condição hard pra cohort 20-30 pagantes
 
-### 3.3. Tópicos NÃO falados hoje (mas relevantes pra próxima reunião societária)
+### 3.2. Tópicos NÃO falados hoje (mas relevantes pra próxima reunião societária)
 
 - **Acordo de cotistas v2.1** — Paulo NÃO recebeu o acordo; recebeu apenas dossiê contador (recorte fiscal). Decisão correta — Paulo é contador, não advogado societário
 - **Estrutura societária formal (% de cada sócio)** — está no acordo v2.1 (RASCUNHO), não foi apresentada/aprovada hoje
@@ -204,7 +195,6 @@ Aplicado **UPDATE** direto em `public.users.crm` pros 2 UUIDs do Ricardo (profis
 
 ### 7.1. Imediato (hoje/amanhã)
 
-- [ ] **Pedro confirmar identidade Sr Carlos Valença + Dr Eline** (transcrição da reunião)
 - [ ] **Smoke Ricardo no Prontuário** pós V1.9.641 deploy (aba Prescrição lista os atestados? 5º card abre o fluxo?)
 - [ ] **Ricardo emitir NOVO atestado pra Alexandre Magno Steglich** com CRM preenchido (substitui o fb99247f imutável)
 - [ ] **Pedro confirmar Pix R$350/sócio** dos 4 sócios pra abertura CNPJ
@@ -271,13 +261,13 @@ Aplicado **UPDATE** direto em `public.users.crm` pros 2 UUIDs do Ricardo (profis
 ### 9.3. Societário
 
 - **Acordo cotistas v2.1 NÃO assinado** = empresa opera hoje sem trava formal de governança entre sócios. Aceitável pré-PMF, **bloqueador pra rodada externa de investimento**
-- **2 nomes incertos da transcrição** (Sr Carlos Valença, Dr Eline) — se forem papéis substantivos (advogado/responsável técnico), precisam entrar formalmente nas decisões societárias
+- **Eduardo Faveret ausente da reunião CNPJ** — precisa ser incluído via comunicação assíncrona nas decisões fiscais/societárias antes de assinatura formal
 
 ---
 
 ## 10. FRASE ÂNCORA
 
-> **10/06/2026 — Dia D do CNPJ.** Paulo recebeu o dossiê contador, alinhou Split Payment 70/30 + NF intermediação + Simples Anexo III + CNAE SaaS. Acordo de cotistas v2.1 NÃO entrou na pauta (decisão correta — separação contador vs societário). Cascata 5 fixes V1.9.635-641 resolveu bug arquitetural CRM exposto pelo atestado urgente do Alexandre Magno Steglich — ITI validava o certificado físico (sempre OK), PDF visual lia do banco (saía vazio). Workaround PAT aplicado pro Ricardo emitir HOJE, fix arquitetural sem regressão mapeado em 4 fases pra próxima sessão. Locks 8 intocados em todos os commits. Próximo: confirmar identidade dos 2 nomes da transcrição + smoke Ricardo pós-V1.9.641 + Pix R$350/sócio destravando Marco 1.
+> **10/06/2026 — Dia D do CNPJ.** Presentes: Pedro + Ricardo + João + Paulo (Eduardo ausente). Paulo recebeu o dossiê contador, alinhou Split Payment 70/30 + NF intermediação + Simples Anexo III + CNAE SaaS. Acordo de cotistas v2.1 NÃO entrou na pauta (decisão correta — separação contador vs societário). Cascata 5 fixes V1.9.635-641 resolveu bug arquitetural CRM exposto pelo atestado urgente do Alexandre Magno Steglich — ITI validava o certificado físico (sempre OK), PDF visual lia do banco (saía vazio). Workaround PAT aplicado pro Ricardo emitir HOJE, fix arquitetural sem regressão mapeado em 4 fases pra próxima sessão. Locks 8 intocados em todos os commits. Próximo: incluir Eduardo na decisão fiscal assíncrona + smoke Ricardo pós-V1.9.641 + Pix R$350/sócio destravando Marco 1.
 
 ---
 
