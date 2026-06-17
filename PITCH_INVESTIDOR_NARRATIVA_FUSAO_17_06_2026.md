@@ -4,8 +4,8 @@
 
 *Clinical Intelligence · Precision Medicine · Real World Evidence*
 
-> **Versão 3.3 — reframe Build vs Growth Capital.**
-> v3.0 institucional Pedro + v3.1 Action Plan/Municípios/CapEx/Backup do consultor externo + v3.2 refinamentos empíricos via PAT + v3.3 **reframe categórico: o capital pedido NÃO é Build Capital · Build já foi investido pelos fundadores como ATIVOS cedidos · capital é Growth + Regulatory + GTM**.
+> **Versão 3.4 — alocação revista + estrutura híbrida de Formalização Patrimonial.**
+> v3.0 institucional Pedro + v3.1 Action Plan/Municípios/CapEx/Backup do consultor externo + v3.2 refinamentos empíricos via PAT + v3.3 reframe Build vs Growth Capital + v3.4 **realocação 25/20/25/20/10 + linha de Formalização Patrimonial estruturada conforme Acordo de Cotistas v2.1 (cessão técnica Pedro + licença clínica Ricardo + licença educacional Ricardo+Eduardo + cessão marca todos)**.
 
 ---
 
@@ -602,22 +602,18 @@ Quatro janelas que se abrem ao mesmo tempo:
 ### Aplicação dos recursos
 
 ```
-35%   Compliance e Regulatório       (R$ 700.000)
-25%   Tecnologia e Operação          (R$ 500.000)
-25%   Comercial e Marketing          (R$ 500.000)
-15%   Capital de Giro                (R$ 300.000)
+25%   Regulatory Capital             (R$ 500.000)
+20%   Growth Capital — Tecnologia    (R$ 400.000)
+25%   Growth Capital — Go-To-Market  (R$ 500.000)
+20%   Formalização Patrimonial       (R$ 400.000)
+10%   Working Capital                (R$ 200.000)
 ```
 
-### O que cada bloco cobre
-
-· **Regulatório:** advogados *(societário + saúde digital)* · DPO + DPIA · prep ANVISA SaMD · Supabase Pro / PITR · ISO 13485
-· **Tecnologia e Operação:** WiseCare produção · escala OpenAI · infraestrutura · Google Workspace @medcannlab.com.br · Resend pago · dev contínuo
-· **Comercial e Marketing:** BD em redes públicas / prefeituras das cidades-alvo · eventos médicos · growth pacientes
-· **Capital de Giro:** runway operacional de 12-18 meses
+> *Detalhamento por linha + estrutura híbrida da Formalização Patrimonial no Slide 22.*
 
 ---
 
-## 22 · GROWTH & COMPLIANCE CAPITAL · ALOCAÇÃO *(+ NOVO · reframe v3.3)*
+## 22 · GROWTH & COMPLIANCE CAPITAL · ALOCAÇÃO *(+ NOVO · reframe v3.4)*
 
 > Visualização dedicada da alocação. Em sala, este slide vira **gráfico pizza ou barras horizontais**.
 
@@ -627,39 +623,53 @@ Quatro janelas que se abrem ao mesmo tempo:
 BUILD CAPITAL              (vazio)                                0%   R$ 0
                            ↑ já investido pelos fundadores · ~R$ 1,15M+ (Slide 18)
 
-REGULATORY CAPITAL         ████████████████████████████████████  35%   R$  700.000
-GROWTH CAPITAL — Tech      █████████████████████████             25%   R$  500.000
-GROWTH CAPITAL — GTM       █████████████████████████             25%   R$  500.000
-WORKING CAPITAL            ███████████████                       15%   R$  300.000
+REGULATORY CAPITAL         ██████████████████████████            25%   R$  500.000
+GROWTH CAPITAL — Tech      █████████████████████                 20%   R$  400.000
+GROWTH CAPITAL — GTM       ██████████████████████████            25%   R$  500.000
+FORMALIZAÇÃO PATRIMONIAL   █████████████████████                 20%   R$  400.000
+WORKING CAPITAL            ██████████                            10%   R$  200.000
 
                                                           TOTAL 100%   R$ 2.000.000
 ```
 
 ### Detalhamento por linha
 
-· **0% Build Capital** — *o produto já existe; os fundadores entregaram R$ 1,15M+ de Build Capital cedido como lastro de quotas*
-· **35% Regulatory Capital · R$ 700.000** — advogados *(societário + saúde digital)* · DPO + DPIA · prep ANVISA SaMD · Supabase Pro / PITR · ISO 13485 + IEC 62304
-· **25% Growth Capital · Tecnologia · R$ 500.000** — WiseCare produção · escala OpenAI · infraestrutura · Google Workspace @medcannlab · Resend pago · dev de escala
-· **25% Growth Capital · Go-To-Market · R$ 500.000** — BD em redes públicas / prefeituras das cidades-alvo · eventos médicos · growth pacientes · captação primeira cohort
-· **15% Working Capital · R$ 300.000** — runway operacional de 12-18 meses
+· **0% Build Capital** — *o produto já existe; os fundadores entregaram R$ 1,15M+ de Build Capital cedido como lastro de quotas (Slide 18)*
+
+· **25% Regulatory Capital · R$ 500.000** *(cenário enxuto realista)* — advogado societário + advogado saúde digital *(boutiques)* · DPO + DPIA · consultor ANVISA SaMD · auditoria modular ISO 13485 + IEC 62304 · Supabase Pro / PITR
+
+· **20% Growth Capital · Tecnologia · R$ 400.000** — WiseCare produção · escala OpenAI · infraestrutura · Google Workspace @medcannlab · Resend pago · dev de escala *(QA + DevOps contratados)*
+
+· **25% Growth Capital · Go-To-Market · R$ 500.000** *(prioridade absoluta)* — BD em redes públicas / prefeituras das cidades-alvo · eventos médicos · growth pacientes · captação primeira cohort · coordenador clínico operacional
+
+· **20% Formalização Patrimonial · R$ 400.000** *(estrutura híbrida alinhada com Acordo de Cotistas v2.1)*:
+   - **Cessão integral de ativos técnicos** *(Pedro · Cláusula 2.1)* — código + schema + pipeline
+   - **Licença exclusiva de métodos clínicos** *(Ricardo · Cláusula 2.2)* — AEC + MIMRE, preservando autoria moral + titularidade acadêmica + uso clínico/formativo próprio *(durante vigência societária + Non-Compete)*
+   - **Licença conjunta de ativos educacionais** *(Ricardo + Eduardo co-50% · Cláusula 2.3)*
+   - **Cessão integral de marca e branding** *(4 sócios · Cláusula 2.4)* — "MedCannLab" + "Nôa Esperança" + identidade visual
+   - **Pagamento:** ~R$ 100k por sócio *(estrutura final a confirmar com Paulo)*
+
+· **10% Working Capital · R$ 200.000** — runway operacional de 12-18 meses *(contas SaaS recorrentes + reservas + contingência · não é folha do time)*
 
 
 
 ### Lógica da alocação *(racional defensável em sala)*
 
-· **35% em Regulatory Capital** porque o moat regulatório é o que mais vale em saúde digital · gasto não-postergável pra Marco 2
-· **25% em Growth Capital — Tecnologia** porque a plataforma já existe — o gasto é em **escala** *(WiseCare prod, Supabase Pro, OpenAI uso ativo)*, não em construção
-· **25% em Growth Capital — Go-To-Market** porque o gargalo do modelo não é margem, é **chegar aos primeiros pagantes** — BD em redes/prefeituras é o caminho
-· **15% em Working Capital** garante **12-18 meses de runway** pré-receita previsível
+· **25% em Regulatory Capital** *(cenário enxuto)* — boutiques jurídicas + auditoria modular ISO/IEC + ANVISA SaMD via consultoria especializada · gasto não-postergável pra Marco 2 sem inflar com Big 4
+· **20% em Growth Capital — Tecnologia** porque a plataforma já existe — o gasto é em **escala** *(WiseCare prod, Supabase Pro, OpenAI uso ativo)*, não em construção
+· **25% em Growth Capital — Go-To-Market** *(prioridade absoluta)* porque o gargalo do modelo não é margem, é **chegar aos primeiros pagantes** — BD em redes/prefeituras é o caminho
+· **20% em Formalização Patrimonial** estrutura híbrida do Acordo de Cotistas v2.1 *(cessão técnica Pedro + licença clínica Ricardo + licença educacional Ricardo+Eduardo + cessão marca todos)* — ativos no balanço + IP juridicamente protegido + autoria moral preservada
+· **10% em Working Capital** garante **12-18 meses de runway** pré-receita previsível
 
 ### Cruzamento alocação ↔ Action Plan *(dinheiro → ação → resultado)*
 
 | Linha de gasto | Etapa do Action Plan dirigida | Resultado mensurável |
 |---|---|---|
-| **35% Compliance e Regulatório** | Marco 0 ANVISA *(já iniciado)* · Etapa 1 *(advogados + DPO)* · Etapa 2 *(Supabase Pro + DPIA)* | Certificações + compliance auditável → destrava Marco 2 |
-| **25% Tecnologia e Operação** | Etapa 1 *(Stripe + escala infra)* · Etapa 2 *(WiseCare prod)* · Etapas 3-4 *(escala IA)* | Plataforma robusta sob carga real → suporta 4k → 20k usuários |
-| **25% Comercial e Marketing** | Etapa 2 *(primeiras clínicas)* · Etapas 3-4 *(BD nas 4 cidades + prefeituras)* | Chegar aos pagantes → break-even Marco 2 → tração regional Marco 3 |
-| **15% Capital de Giro** | Cobre meses 1-18 *(Etapas 1-2 inteiras)* | Runway pré-receita previsível · evita pivot por aperto financeiro |
+| **25% Regulatory Capital** | Marco 0 ANVISA *(já iniciado)* · Etapa 1 *(advogados + DPO)* · Etapa 2 *(Supabase Pro + DPIA)* | Certificações + compliance auditável → destrava Marco 2 |
+| **20% Growth Tech** | Etapa 1 *(Stripe + escala infra)* · Etapa 2 *(WiseCare prod)* · Etapas 3-4 *(escala IA)* | Plataforma robusta sob carga real → suporta 4k → 20k usuários |
+| **25% Growth GTM** | Etapa 2 *(primeiras clínicas)* · Etapas 3-4 *(BD nas 4 cidades + prefeituras)* | Chegar aos pagantes → break-even Marco 2 → tração regional Marco 3 |
+| **20% Formalização Patrimonial** | Marco 1 *(estrutura societária limpa pós-CNPJ)* | Acordo de Cotistas v2.1 executado · ativos formalizados no balanço · IP protegido juridicamente |
+| **10% Working Capital** | Cobre meses 1-18 *(Etapas 1-2 inteiras)* | Runway pré-receita previsível · evita pivot por aperto financeiro |
 
 > **Cada real do capital tem destino visível.** O investidor enxerga em qual marco aquele dinheiro vai virar resultado mensurável.
 
@@ -804,7 +814,7 @@ A plataforma operacional *(17 Edge Functions, ~7.700 linhas de Core IA, 8 locks 
 
 **Documento:** Pitch Investidor — Versão Fusão Narrativa
 **Data:** 17 de junho de 2026
-**Versão:** 3.3 *(v3.2 + reframe Build vs Growth Capital: Slide 18 reorientado pra ATIVOS entregues · Slide 21 com bloco "o que NÃO é Build Capital" · Slide 22 categorizado em Build/Growth/Regulatory/Working · Slide 27 abertura com reframe)*
+**Versão:** 3.4 *(v3.3 + realocação 25/20/25/20/10 + linha de Formalização Patrimonial estruturada conforme Cláusulas 2.1-2.4 do Acordo de Cotistas v2.1 — respeita veto Ricardo 30/05 sobre cessão de IP clínico)*
 **Status:** rascunho para revisão dos 4 sócios antes de apresentação a investidor
 
 **Confirmações pendentes antes do pitch:**
