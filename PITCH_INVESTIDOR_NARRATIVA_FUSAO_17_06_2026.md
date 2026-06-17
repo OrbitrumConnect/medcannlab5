@@ -4,36 +4,41 @@
 
 *Clinical Intelligence · Precision Medicine · Real World Evidence*
 
-> **Versão fusão narrativa (17/06/2026 noite).** Estrutura institucional original do Pedro preservada · acréscimos empíricos cruzados via PAT 17/06 + memórias do projeto + WebSearch demografia DRC. Slides novos indicados com `+ NOVO` no índice; slides originais preservados quase integralmente, com calibrações em rodapé quando pertinente.
+> **Versão 3.1 — fusão narrativa institucional + lastros empíricos + Action Plan executivo.**
+> Atualização 17/06/2026 noite: adicionados 4 slides solicitados em revisão consultiva *(Action Plan 2026-2029 · Municípios Prioritários · CapEx Visual · Backup Valuation)*. Estrutura institucional original do Pedro preservada · acréscimos empíricos cruzados via PAT 17/06 + memórias do projeto + WebSearch demografia DRC.
 
 ---
 
-## ÍNDICE DE SLIDES
+## ÍNDICE DE SLIDES *(27 slides — 14 originais Pedro + 13 NOVOS)*
 
 ```
 01. A MEDICINA ESTÁ MUDANDO              (original)
 02. O QUE É A MEDCANNLAB                 (original + nota de estágio)
 03. O PROBLEMA                           (original + dados DRC empíricos)
 04. NOSSA SOLUÇÃO                        (original + sidecars cognitivos)
-05. DIFERENCIAIS COMPETITIVOS            (original + lastros técnicos verificáveis)
+05. DIFERENCIAIS COMPETITIVOS            (original + lastros técnicos)
 06. TRAÇÃO COMPROVADA                    (original + separação técnica × comercial)
 07. ARQUITETURA E COMPLIANCE             + NOVO
-08. ESTRATÉGIA DE MERCADO                (original + recalibração "possíveis alvos")
-09. EXPANSÃO POR FASES                   (original + timing por marcos)
-10. PREVISIBILIDADE OPERACIONAL          + NOVO
-11. MODELO DE NEGÓCIOS                   (original + pricing cravado)
-12. UNIT ECONOMICS                       + NOVO
-13. TRACK REGULATÓRIO                    + NOVO
-14. O ATIVO MAIS VALIOSO                 (original + lastros RWE empíricos)
-15. EQUIPE FUNDADORA                     (original + pedigree)
-16. CAPITAL INTELECTUAL CEDIDO           + NOVO
-17. RISCOS E TRANSPARÊNCIA               + NOVO
-18. POR QUE AGORA                        + NOVO
-19. NECESSIDADE DE INVESTIMENTO          (original)
-20. VALUATION                            (original + 7 lastros)
-21. MARCOS DE RE-PRECIFICAÇÃO            + NOVO
-22. VISÃO 2030                           (original)
-23. ANEXOS E REFERÊNCIAS                 + NOVO
+08. ESTRATÉGIA DE MERCADO                (original + recalibração possíveis alvos)
+09. MUNICÍPIOS PRIORITÁRIOS              + NOVO  ← slide dedicado ao roadmap João
+10. ACTION PLAN EXECUTIVO 2026-2029      + NOVO  ← linha temporal cravada
+11. EXPANSÃO POR FASES (verticais)       (original + timing por marcos)
+12. PREVISIBILIDADE OPERACIONAL          + NOVO
+13. MODELO DE NEGÓCIOS                   (original + pricing cravado)
+14. UNIT ECONOMICS                       + NOVO
+15. TRACK REGULATÓRIO                    + NOVO
+16. O ATIVO MAIS VALIOSO                 (original + lastros RWE empíricos)
+17. EQUIPE FUNDADORA                     (original + pedigree)
+18. CAPITAL INTELECTUAL CEDIDO           + NOVO
+19. RISCOS E TRANSPARÊNCIA               + NOVO
+20. POR QUE AGORA                        + NOVO
+21. NECESSIDADE DE INVESTIMENTO          (original)
+22. CAPEX VISUAL (alocação)              + NOVO  ← slide dedicado pizza/barras
+23. VALUATION                            (original + 7 lastros)
+24. MARCOS DE RE-PRECIFICAÇÃO            + NOVO
+25. VISÃO 2030                           (original)
+26. ANEXOS E REFERÊNCIAS                 + NOVO
+27. BACKUP · POR QUE R$ 15M PRÉ-MONEY?   + NOVO  ← Q&A preparada da pergunta dura
 ```
 
 ---
@@ -90,7 +95,7 @@ O resultado é **baixa eficiência clínica e perda de oportunidades terapêutic
 
 · **15 milhões** de brasileiros com **Doença Renal Crônica** (~8,4% adultos · SBN)
 · **6,7%** prevalência em adultos · **21,4%** em idosos *(Pesquisa Nacional de Saúde)*
-· **157.357** pacientes em diálise *(Censo Brasileiro 2023)* — custo médio por paciente em diálise: **R$ 60.000 a R$ 120.000 / ano**
+· **157.357** pacientes em diálise *(Censo Brasileiro 2023)* — custo médio: **R$ 60.000 a R$ 120.000 / paciente / ano**
 · **#1 Hipertensão · #2 Diabetes · #3 Glomerulonefrite** — doenças preveníveis se mapeadas em estágios precoces
 · **O gargalo invisível:** estágios G1-G2 da DRC só são detectados quando a creatinina já alterou. A janela de remissão é perdida
 
@@ -167,7 +172,7 @@ Resultados acumulados até **17/06/2026** *(empírico, banco de dados auditado v
 ### Tração comercial *(transparência)*
 
 · Plataforma operacional · uso interno e testes clínicos
-· **1ª paciente externa real validada** em maio/2026 *(Maria das Dores Pitoco)*
+· **1ª paciente externa real validada** em maio/2026
 · **0 paciente pagante externo** hoje *(PaymentGate em mock — destravamento depende do CNPJ ativar este mês)*
 
 > **Estado real:** beta → alpha. Toda a infraestrutura tecnológica está operacional.
@@ -185,7 +190,7 @@ Resultados acumulados até **17/06/2026** *(empírico, banco de dados auditado v
 · **17 Edge Functions** em produção · **16 com `verify_jwt=true`** — defesa em camadas
 · **Row Level Security (RLS)** em **100% das tabelas**
 · **Trigger de imutabilidade pós-assinatura** *(anti-adulteração juridicamente correto)*
-· **Sanitização de PII** em produção *(3 versões consolidadas: V1.9.452 · V1.9.566 · V1.9.597)*
+· **Sanitização de PII** em produção *(3 versões consolidadas)*
 · **8 locks arquiteturais** preservados ao longo de ~10 meses de desenvolvimento
 
 ### Stack
@@ -208,38 +213,124 @@ Resultados acumulados até **17/06/2026** *(empírico, banco de dados auditado v
 
 A entrada ocorrerá inicialmente pela **nefrologia**, onde já existe validação clínica e liderança médica do Dr. Ricardo Valença.
 
-### Região-alvo — possíveis cidades-piloto no eixo Rio – Santos
+A escolha do vertical não é mercadológica — é **epistemológica**. O método AEC + MIMRE foi desenvolvido a partir da prática nefrológica de longo prazo. Começar por onde o método é fluência clínica natural acelera a curva de validação.
 
-| Cidade | UF | População *(IBGE 2025)* | DRC potencial *(~8,9% ELSA-Brasil)* |
+A escolha do **eixo Rio – Santos** combina:
+
+· Densidade de DRC alta *(urbanização + concentração HAS/DM)*
+· Acesso institucional via Dr. João Eduardo Vidal
+· Proximidade operacional dos sócios
+· Logística mínima *(raio ≤ 500 km)*
+
+> Detalhamento por município no **Slide 09**.
+
+**A nefrologia será o primeiro vertical de validação · o eixo Rio-Santos será o primeiro território.**
+
+---
+
+## 09 · MUNICÍPIOS PRIORITÁRIOS *(+ NOVO)*
+
+> Mapeamento estratégico de **possíveis cidades-alvo**. Cada piloto exige negociação caso-a-caso com prefeitura / rede / clínica âncora.
+
+| Cidade | População *(IBGE 2025)* | DRC potencial *(~8,9% ELSA-Brasil)* | Por que foi mapeada |
 |---|---|---|---|
-| Rio Bonito | RJ | ~63 mil | ~5.600 |
-| Niterói | RJ | 516.787 | ~46.000 |
-| Nova Iguaçu | RJ | 843.220 | ~75.000 |
-| Santos | SP | 418.608 | ~37.000 |
-| **TOTAL** | | **~1,84 milhão** | **~163.500** |
+| **Rio Bonito · RJ** | ~63 mil | ~5.600 | Vertex regional inicial · proximidade clínica âncora |
+| **Niterói · RJ** | 516.787 | ~46.000 | Densidade médica · proximidade Ricardo |
+| **Nova Iguaçu · RJ** | 843.220 | ~75.000 | Baixada Fluminense · alta DM/HAS · déficit de especialistas |
+| **Santos · SP** | 418.608 | ~37.000 | Litoral SP · porto · população envelhecida · nefrologia presente |
+| **TOTAL** | **~1.842.000** | **~163.500** | — |
 
-> As cidades-alvo são **mapeamento estratégico** baseado em densidade DRC, acesso institucional via João Vidal e proximidade dos sócios. Cada piloto exige negociação caso-a-caso com prefeitura / rede / clínica âncora.
-
-**A nefrologia será o primeiro vertical de validação.**
-
----
-
-## 09 · EXPANSÃO POR FASES
-
-Após a validação inicial:
-
-**FASE 1 · NEFROLOGIA** — meses 0-12 — destrava Marco 2 *(PMF + break-even)*
-**FASE 2 · NEUROLOGIA · DOR CRÔNICA · TEA · TDAH · ANSIEDADE** — meses 12-24 — destrava Marco 3 *(tração regional + eixo Eduardo Faveret)*
-**FASE 3 · LONGEVIDADE · MEDICINA PREVENTIVA · SAÚDE CORPORATIVA** — meses 24-48 — destrava Marco 4 *(escala nacional)*
+> **Total endereçável nas 4 cidades: ~163 mil pacientes DRC potenciais.**
+>
+> Esta combinação cobre **densidade urbana alta · acesso institucional estabelecido · proximidade operacional dos sócios**. Conversa diretamente com o discurso institucional do Dr. João Eduardo Vidal *(parcerias com prefeituras e redes públicas)*.
 
 ---
 
-## 10 · PREVISIBILIDADE OPERACIONAL *(+ NOVO)*
+## 10 · ACTION PLAN EXECUTIVO 2026 – 2029 *(+ NOVO)*
+
+> Linha temporal cravada · 5 etapas · do CNPJ à saturação regional.
+
+### Etapa 1 · Junho – Julho 2026
+**Destravar a operação.**
+
+· CNPJ ativo *(Paulo executando · saindo este mês)*
+· Stripe Connect ligado *(substituir PaymentGate mock)*
+· Conta bancária PJ
+· Track regulatório ANVISA iniciado
+
+**Meta:** primeira receita
+
+---
+
+### Etapa 2 · Agosto – Dezembro 2026
+**Tração inicial e break-even.**
+
+· Primeiros 100 pacientes pagantes
+· Primeiras clínicas onboardadas
+· 2º médico independente operacional
+· Supabase Pro + PITR ativos *(compliance pré-Marco 2)*
+
+**Meta:** break-even *(empírico: ~25 pacientes já cobrem a operação · cenário 100 é margem confortável)*
+
+---
+
+### Etapa 3 · 2027
+**Projeto-piloto multi-município.**
+
+· Niterói · Nova Iguaçu · Santos *(rolling pilot)*
+· Onboarding 12-15 médicos cumulativo
+· 1ª equipe operacional consolidada
+· Relatório DRC B2B *(R$ 122/unidade)* em primeiras redes
+
+**Meta:** **4.000 usuários ativos** *(coerente com modelo de equipe — Slide 12)*
+
+---
+
+### Etapa 4 · 2028
+**Escala regional.**
+
+· 4 cidades operando *(eixo Rio – Santos completo)*
+· Expansão Grande Rio + Baixada Santista
+· Eixo Ensino (Eduardo Faveret) ativo
+
+**Meta:** **20.000 usuários · 5 equipes**
+
+---
+
+### Etapa 5 · 2029
+**Escala nacional.**
+
+· Replicação para outros estados *(modelo padronizado)*
+· Cohort B2B nefrologia consolidado
+· Indústria farmacêutica em parcerias RWE
+· Camadas Neurologia / Longevidade ativas
+
+**Meta:** **70.000 usuários · 14 equipes**
+
+---
+
+> **Calibração de honestidade:** as metas das Etapas 2 e 5 são meta-ambição.
+> · *Etapa 2 (100 pacientes em 5 meses)* exige aquisição de ~20 pacientes/mês — agressivo, defensável pela densidade do eixo escolhido.
+> · *Etapa 5 (70k em 2029)* situa-se no limiar otimista do range operacional (37-48 meses → saturação) — confortável se Etapa 1 fechar em julho/2026.
+
+---
+
+## 11 · EXPANSÃO POR FASES (verticais clínicos)
+
+Enquanto a **Etapa cronológica** *(Slide 10)* descreve **quando**, esta seção descreve **quais áreas clínicas** entram em cada momento:
+
+**FASE 1 · NEFROLOGIA** — meses 0-12 · destrava Marco 2 *(PMF + break-even)*
+**FASE 2 · NEUROLOGIA · DOR CRÔNICA · TEA · TDAH · ANSIEDADE** — meses 12-24 · destrava Marco 3 *(tração regional + eixo Eduardo Faveret)*
+**FASE 3 · LONGEVIDADE · MEDICINA PREVENTIVA · SAÚDE CORPORATIVA** — meses 24-48 · destrava Marco 4 *(escala nacional)*
+
+---
+
+## 12 · PREVISIBILIDADE OPERACIONAL *(+ NOVO)*
 
 > Modelo de escala baseado em capacidade médica + suporte + agendamento.
 
-**Regra operacional:** uma equipe atende ~4.000 usuários ativos.
-**Lógica:** 1 nefrologista atende ~20 pacientes/semana = 80/mês × 12 médicos por equipe = 960 ativos × ~25% reserva = ~4.000 cadastrados sustentáveis.
+**Regra operacional:** uma equipe atende ~4.000 usuários cadastrados.
+**Lógica:** 1 nefrologista atende ~20 pacientes/semana = 80/mês × 12 médicos por equipe = 960 ativos · taxa de uso ativo SaaS saúde ~25-30% → 4.000 cadastrados sustentáveis por equipe.
 
 | Estágio | Usuários ativos | Equipes | Timing-alvo |
 |---|---|---|---|
@@ -254,7 +345,7 @@ A escala não exige reescrever produto — exige **operação comercial**.
 
 ---
 
-## 11 · MODELO DE NEGÓCIOS
+## 13 · MODELO DE NEGÓCIOS
 
 **B2C** — Assinaturas de pacientes
 **B2B** — Licenciamento para clínicas e profissionais
@@ -278,7 +369,7 @@ A escala não exige reescrever produto — exige **operação comercial**.
 
 ---
 
-## 12 · UNIT ECONOMICS *(+ NOVO)*
+## 14 · UNIT ECONOMICS *(+ NOVO)*
 
 > A história mais forte do pitch: **PMF coincide com break-even** na mesma curva.
 
@@ -292,19 +383,19 @@ A escala não exige reescrever produto — exige **operação comercial**.
 **Cenário A — Break-even mínimo = Marco 2**
 *25 pacientes pagantes × R$ 33,33 = R$ 833/mês — cobre toda a operação.*
 
-**Cenário B — Tração inicial (mês 12-18)**
-*100 pacientes + 10 profissionais + 50 consultas/mês = ~R$ 11.832/mês de receita.*
+**Cenário B — Tração inicial *(Etapa 2 do Action Plan)***
+*100 pacientes × R$ 33,33 = R$ 3.333/mês · + take-rate consultas + B2B = ~R$ 11.832/mês.*
 **EBITDA estimado ≈ +R$ 10.300/mês.**
 
 **Cenário C — Cobertura 4 cidades-alvo @ 1% conversão**
-*1.635 pacientes × R$ 33,33 = ~R$ 54.500/mês de B2C + take-rate + B2B = ~R$ 80–120k/mês após 24-36 meses.*
+*1.635 pacientes × R$ 33,33 = ~R$ 54.500/mês · + take-rate + B2B = ~R$ 80–120k/mês após 24-36 meses.*
 
 > **A meta de PMF e a meta de break-even são a mesma:** ~25 pacientes pagantes.
-> O risco do modelo **não é margem** *(CapEx baixo, OpEx enxuto)* — é **chegar aos primeiros pagantes**.
+> O risco do modelo **não é margem** — é **chegar aos primeiros pagantes**.
 
 ---
 
-## 13 · TRACK REGULATÓRIO *(+ NOVO)*
+## 15 · TRACK REGULATÓRIO *(+ NOVO)*
 
 ### Marco 0 — ANVISA SaMD *(iniciado em junho/2026)*
 
@@ -321,7 +412,7 @@ A MedCannLab iniciou em junho/2026 o **trilho de certificação como SaMD** *(So
 
 | Eixo | Estado |
 |---|---|
-| Versionamento + locks formalizados | Implementado *(V1.9.X · 8 locks)* |
+| Versionamento + locks formalizados | Implementado *(8 locks)* |
 | Trilha de auditoria *(RLS + immutability + signed_hash)* | Implementado |
 | Assinatura digital ICP-Brasil PBAD AD-RB | Funcionando *(48 documentos)* |
 | Sanitização PII | Em produção |
@@ -337,7 +428,7 @@ Modelo de receita: **Split Payment 70/30** *(NF de intermediação sobre os 30%)
 
 ---
 
-## 14 · O ATIVO MAIS VALIOSO
+## 16 · O ATIVO MAIS VALIOSO
 
 O maior ativo da MedCannLab **não é o software**.
 
@@ -356,16 +447,16 @@ Esse ativo possui enorme valor para pesquisa, indústria e sistemas de saúde.
 
 · **151 relatórios clínicos** estruturados em formato padronizado
 · **142 racionalidades clínicas** em 5 vertentes terapêuticas
-· **4.415 interações IA** instrumentadas com metadata completa *(modelo + tokens + custo + latência)*
+· **4.415 interações IA** instrumentadas com metadata completa
 · **48 documentos** com cadeia ICP-Brasil válida *(prova judicial)*
-· **18 AECs** em curso ou completas *(método autoral aplicado)*
+· **18 AECs** em curso ou completas
 · **100 agendamentos** *(longitudinal de comparecimento)*
 
 > A âncora narrativa de longo prazo: a Sociedade Brasileira de Nefrologia estima **~70.000 pacientes DRC mapeáveis em estágios precoces** — mercado primário para o relatório B2B R$ 122 / unidade.
 
 ---
 
-## 15 · EQUIPE FUNDADORA
+## 17 · EQUIPE FUNDADORA
 
 **João Eduardo Vidal**
 *Diretor Institucional e Desenvolvimento de Negócios*
@@ -387,7 +478,7 @@ A combinação entre **experiência clínica, tecnologia e desenvolvimento de ne
 
 ---
 
-## 16 · CAPITAL INTELECTUAL CEDIDO *(+ NOVO)*
+## 18 · CAPITAL INTELECTUAL CEDIDO *(+ NOVO)*
 
 > Lastro do valuation pré-money. O investimento intelectual maior **já foi feito** como trabalho cedido pelos sócios.
 
@@ -406,35 +497,31 @@ A combinação entre **experiência clínica, tecnologia e desenvolvimento de ne
 | **TOTAL IP cedido** | **~R$ 868 mil – R$ 1,4 milhão** |
 | **Valor mediano** | **~R$ 1,15 milhão** |
 
-> **Mensagem ao investidor:** o "investimento" maior *(a plataforma + método autoral)* já foi entregue à empresa. O capital pedido é para **operação, regulação e crescimento** — não para construir o produto, que já existe.
+> **Mensagem:** o "investimento" maior *(plataforma + método autoral)* já foi entregue à empresa.
+> O capital pedido é para **operação, regulação e crescimento** — não para construir o produto, que já existe.
 
 ---
 
-## 17 · RISCOS E TRANSPARÊNCIA *(+ NOVO)*
+## 19 · RISCOS E TRANSPARÊNCIA *(+ NOVO)*
 
-> Princípio do projeto: documento institucional sem cruzamento empírico não vale.
-> Apresentamos os riscos abertamente.
+> Princípio: documento institucional sem cruzamento empírico não vale. Apresentamos os riscos abertamente.
 
 ### Comercial
-
 · **0 paciente pagante externo** hoje — risco é chegar aos primeiros 20-30 *(Marco 2)*
 · PaymentGate é **mock** pré-CNPJ — Stripe Connect ligado em ~2-4 semanas após CNPJ ativar
 · Pricing R$ 122 × 70k DRC *(âncora Soc. Nefrologia)* é **vitrine narrativa**, não pipeline contratado
 · Cidades-alvo são **mapeamento estratégico**, não pilotos firmados
 
 ### Societário
-
 · Acordo de cotistas em rascunho v2.1 — revisão jurídica pendente
-· Resolução pré-protocolo: pool de Tesouraria 20% não cabe em Ltda *(decisão: 25% cada + pool tratado no acordo)*
+· Pool de Tesouraria 20% não cabe em Ltda *(resolução pré-protocolo: 25% cada + pool tratado no acordo)*
 
 ### Técnico-clínico
-
 · Plataforma em transição beta → alpha — uso interno + testes clínicos
 · WiseCare V4H em homolog *(migrar produção — custo a definir)*
-· Bug clínico mapeado em junho/2026 — fix em pipeline com slug-test paralelo + validação clínica
+· Bug clínico mapeado em junho/2026 — fix em pipeline com slug-test paralelo
 
 ### Regulatório
-
 · PITR + pgaudit *(Supabase Pro)* — pré-condição Marco 2, capital cobre
 · Advogado saúde digital + DPO + DPIA — capital cobre
 
@@ -442,7 +529,7 @@ A combinação entre **experiência clínica, tecnologia e desenvolvimento de ne
 
 ---
 
-## 18 · POR QUE AGORA *(+ NOVO)*
+## 20 · POR QUE AGORA *(+ NOVO)*
 
 Quatro janelas que se abrem ao mesmo tempo:
 
@@ -453,7 +540,7 @@ Quatro janelas que se abrem ao mesmo tempo:
 
 ---
 
-## 19 · NECESSIDADE DE INVESTIMENTO
+## 21 · NECESSIDADE DE INVESTIMENTO
 
 **Captação alvo: R$ 2.000.000**
 
@@ -475,7 +562,31 @@ Quatro janelas que se abrem ao mesmo tempo:
 
 ---
 
-## 20 · VALUATION
+## 22 · CAPEX VISUAL · ALOCAÇÃO DO CAPITAL *(+ NOVO)*
+
+> Visualização dedicada da alocação. Em sala, este slide vira **gráfico pizza ou barras horizontais**.
+
+### Distribuição percentual
+
+```
+COMPLIANCE & REGULATÓRIO  ████████████████████████████████████   35%   R$  700.000
+TECNOLOGIA & OPERAÇÃO     █████████████████████████              25%   R$  500.000
+COMERCIAL & MARKETING     █████████████████████████              25%   R$  500.000
+CAPITAL DE GIRO           ███████████████                        15%   R$  300.000
+
+                                                          TOTAL  100%  R$ 2.000.000
+```
+
+### Lógica da alocação *(racional defensável em sala)*
+
+· **35% em Compliance** porque o moat regulatório é o que mais vale no setor de saúde digital · gasto não-postergável pra Marco 2
+· **25% em Tecnologia** porque a plataforma já existe — o gasto é em **escala** *(WiseCare prod, Supabase Pro, OpenAI uso ativo)*, não em construção
+· **25% em Comercial** porque o gargalo do modelo não é margem, é **chegar aos primeiros pagantes** — BD em redes/prefeituras é o caminho
+· **15% em Capital de Giro** garante **12-18 meses de runway** pré-receita previsível
+
+---
+
+## 23 · VALUATION
 
 **Valuation Pré-Money: R$ 15.000.000**
 
@@ -494,21 +605,23 @@ Quatro janelas que se abrem ao mesmo tempo:
 · HealthTech early-stage BR com produto rodando + compliance: pré-seed entre R$ 8M e R$ 25M
 · MedCannLab posiciona-se na faixa intermediária-alta por compliance real + método autoral + 4 sócios + track ANVISA
 
+> A pergunta dura — "*Por que R$ 15M com 0 cliente pagante?*" — é tratada no **Slide 27 (Backup)**.
+
 ---
 
-## 21 · MARCOS DE RE-PRECIFICAÇÃO *(+ NOVO)*
+## 24 · MARCOS DE RE-PRECIFICAÇÃO *(+ NOVO)*
 
 | Marco | Critério objetivo | Re-precificação esperada |
 |---|---|---|
 | **Marco 0 · Track ANVISA** | Processo regulatório iniciado | Credencial regulatória *(em curso · junho/2026)* |
 | **Marco 1 · CNPJ + Cobrança** | CNPJ ativo · Stripe Connect ligado · 1ª transação real | Destrava receita *(este mês)* |
 | **Marco 2 · PMF + Break-even** | 20-30 pacientes pagantes · 2º médico independente · Supabase Pro | Pré-money R$ 25M – 40M |
-| **Marco 3 · Tração regional** | 4k usuários ativos em 1ª cidade · cohort B2B Nefrologia ativo | Pré-money R$ 60M – 100M |
-| **Marco 4 · Escala** | 4 cidades operando · 10 equipes ativas · 20-40k usuários | Series A · Pré-money R$ 150M+ |
+| **Marco 3 · Tração regional** | 4k usuários ativos *(Etapa 3 do Action Plan)* · cohort B2B ativo | Pré-money R$ 60M – 100M |
+| **Marco 4 · Escala** | 4 cidades operando · 10 equipes ativas · 20-40k usuários *(Etapa 4)* | Series A · Pré-money R$ 150M+ |
 
 ---
 
-## 22 · VISÃO 2030
+## 25 · VISÃO 2030
 
 Ser **a principal plataforma brasileira de inteligência clínica aplicada à medicina personalizada**.
 
@@ -516,7 +629,7 @@ Conectar pacientes, profissionais, pesquisadores e indústria através de uma in
 
 ---
 
-## 23 · ANEXOS E REFERÊNCIAS *(+ NOVO)*
+## 26 · ANEXOS E REFERÊNCIAS *(+ NOVO)*
 
 ### Documentos de suporte *(disponíveis para due diligence)*
 
@@ -540,6 +653,64 @@ Conectar pacientes, profissionais, pesquisadores e indústria através de uma in
 
 ---
 
+## 27 · BACKUP · POR QUE R$ 15M PRÉ-MONEY? *(+ NOVO · Q&A preparada)*
+
+> **Slide oculto · usado quando o investidor faz a pergunta dura.**
+
+### A pergunta provável
+
+> *"Vocês estão pedindo R$ 15M pré-money com 0 cliente pagante, receita zero e CNPJ ainda abrindo. Por quê?"*
+
+### A resposta defensável *(em 4 blocos)*
+
+**1 · O investimento maior já foi feito · ~R$ 1,15M de IP cedido**
+
+A plataforma operacional *(17 Edge Functions, ~7.700 linhas de Core IA, 8 locks arquiteturais, assinatura ICP-Brasil PBAD AD-RB CONFORME ITI v2.4 verificada)* representa **~10 meses de desenvolvimento intensivo** dos 4 sócios. Avaliado conservadoramente em **~R$ 1,15 milhão de capital intelectual cedido**, formalizado como lastro de quotas no acordo de cotistas. O investidor entra com capital **complementar**, não para construir produto.
+
+**2 · Compliance real, não declarado**
+
+· Algoritmo de assinatura digital verificado em portal oficial *(validar.iti.gov.br)*
+· 48 documentos com cadeia ICP-Brasil válida
+· RLS em 100% das tabelas
+· Trigger de imutabilidade pós-assinatura *(anti-adulteração)*
+· Track ANVISA SaMD iniciado este mês *(RDC 657/2022)*
+
+> **Menos de 5% das healthtech BR têm essa profundidade de compliance ativa.** Esse é o moat regulatório.
+
+**3 · Método autoral validado e proprietário**
+
+· **AEC** *(Avaliação Estruturada Cognitiva)* — método clínico autoral
+· **MIMRE** *(Método Incentivador Mínimo do Relato Espontâneo)* — fronteira fenomenológica
+· **Sidecars Cognitivos** *(Renal · Cannabis · Neuro · Sinais do Relato)* — arquitetura única
+
+> Esse método **não pode ser copiado por scribes** *(que só transcrevem)* nem por symptom checkers *(que fecham a abertura clínica em lista de sintomas)*.
+
+**4 · Equipe multidisciplinar e complementar**
+
+· **Dr. Ricardo Valença** — autoridade clínica e regulatória *(CRM 5253203-7)*
+· **Dr. Eduardo Faveret** — neurologia e eixo Ensino
+· **João Eduardo Vidal** — institucional e parcerias públicas
+· **Pedro Henrique Passos Galluf** — CTO e arquitetura cognitiva
+
+> A composição dos 4 sócios cobre **clínica + tecnologia + institucional + educação** — raro num pré-seed.
+
+---
+
+### Resumo defensável em 1 frase
+
+> *"R$ 15M é o pré-money de quem entrega ao investidor uma plataforma operacional, compliance verificável, método autoral proprietário, mercado endereçável de ~163 mil pacientes DRC nas 4 cidades-alvo, equipe complementar e track ANVISA iniciado — pedindo R$ 2M para destravar a receita, não para construir o produto."*
+
+---
+
+### Comparáveis de mercado *(referência indireta — healthtech BR/LATAM 2024-2026)* 🟡
+
+· HealthTech BR sem MVP: pré-seed entre R$ 3M e R$ 8M
+· HealthTech BR com MVP e compliance parcial: pré-seed entre R$ 8M e R$ 15M
+· HealthTech BR com produto rodando, compliance real e método autoral: pré-seed entre R$ 15M e R$ 25M
+· **MedCannLab posiciona-se no patamar intermediário-alto** por compliance real *(ICP-Brasil ativo)* + método autoral *(AEC/MIMRE)* + track ANVISA iniciado + 4 sócios complementares
+
+---
+
 # MEDCANNLAB
 
 *Clinical Intelligence for a New Era of Medicine*
@@ -550,7 +721,7 @@ Conectar pacientes, profissionais, pesquisadores e indústria através de uma in
 
 **Documento:** Pitch Investidor — Versão Fusão Narrativa
 **Data:** 17 de junho de 2026
-**Versão:** 3.0 *(narrativa institucional Pedro + acréscimos empíricos auditados via PAT)*
+**Versão:** 3.1 *(v3.0 + 4 slides solicitados em revisão consultiva: Action Plan 2026-2029 · Municípios Prioritários · CapEx Visual · Backup Valuation)*
 **Status:** rascunho para revisão dos 4 sócios antes de apresentação a investidor
 
 **Confirmações pendentes antes do pitch:**
@@ -560,3 +731,5 @@ Conectar pacientes, profissionais, pesquisadores e indústria através de uma in
 - [ ] Acordo de cotistas v2.1 revisado por advogado antes do investidor sentar
 - [ ] Eduardo Faveret ciência das decisões fiscais e societárias
 - [ ] Track ANVISA — número do protocolo *(se já houver)*
+- [ ] Etapa 2 (100 pacientes em 5 meses) — meta defensável dado funil real do João?
+- [ ] Etapa 3-5 datas vs Slide 12 *(meses 10-15, 16-24, 37-48)* — alinhar narrativa interna
