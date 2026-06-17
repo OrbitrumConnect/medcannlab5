@@ -4,8 +4,8 @@
 
 *Clinical Intelligence · Precision Medicine · Real World Evidence*
 
-> **Versão 3.2 — refinamento final pré-revisão de sócios.**
-> v3.0 institucional Pedro + v3.1 Action Plan/Municípios/CapEx/Backup do consultor externo + v3.2 refinamentos empíricos cruzados via PAT 17/06 14:30 *(breakdown 5 vertentes terapêuticas · engagement 30d · 3 diferenciais epistemológicos cravados em memória · matriz competitive landscape · cruzamento alocação ↔ Action Plan)*.
+> **Versão 3.3 — reframe Build vs Growth Capital.**
+> v3.0 institucional Pedro + v3.1 Action Plan/Municípios/CapEx/Backup do consultor externo + v3.2 refinamentos empíricos via PAT + v3.3 **reframe categórico: o capital pedido NÃO é Build Capital · Build já foi investido pelos fundadores como ATIVOS cedidos · capital é Growth + Regulatory + GTM**.
 
 ---
 
@@ -29,11 +29,11 @@
 15. TRACK REGULATÓRIO                    + NOVO
 16. O ATIVO MAIS VALIOSO                 (original + lastros RWE empíricos)
 17. EQUIPE FUNDADORA                     (original + pedigree)
-18. CAPITAL INTELECTUAL CEDIDO           + NOVO
+18. ATIVOS JÁ ENTREGUES PELOS FUNDADORES + NOVO  ← reframe v3.3 (era "Capital Intelectual")
 19. RISCOS E TRANSPARÊNCIA               + NOVO
 20. POR QUE AGORA                        + NOVO
 21. NECESSIDADE DE INVESTIMENTO          (original)
-22. CAPEX VISUAL (alocação)              + NOVO  ← slide dedicado pizza/barras
+22. GROWTH & COMPLIANCE CAPITAL          + NOVO  ← reframe v3.3 (era "CapEx Visual")
 23. VALUATION                            (original + 7 lastros)
 24. MARCOS DE RE-PRECIFICAÇÃO            + NOVO
 25. VISÃO 2030                           (original)
@@ -517,27 +517,32 @@ A combinação entre **experiência clínica, tecnologia e desenvolvimento de ne
 
 ---
 
-## 18 · CAPITAL INTELECTUAL CEDIDO *(+ NOVO)*
+## 18 · ATIVOS JÁ ENTREGUES PELOS FUNDADORES *(+ NOVO · reframe v3.3)*
 
-> Lastro do valuation pré-money. O investimento intelectual maior **já foi feito** como trabalho cedido pelos sócios.
+> **O Build Capital já foi investido.** Os 4 sócios entregaram ~10 meses de trabalho especializado convertido em ativos operacionais cedidos à empresa como lastro de quotas. O capital pedido **não é para construir** — é para escalar e regular o que já existe.
 
-· **Período:** final de agosto/2025 a junho/2026 *(~10 meses)*
-· **Modo de trabalho:** sessões longas regulares · reuniões presenciais frequentes · viagens entre sócios
+### Os 8 ativos entregues
 
-### Estimativa de valor *(range conservador-otimista)*
+| Ativo | Estado | Valor de reposição estimado |
+|---|---|---|
+| **Plataforma SaaS operacional** *(frontend React + backend Supabase + 17 Edge Functions)* | 🟢 em produção | R$ 250.000 – 400.000 |
+| **Arquitetura cognitiva IA Nôa** *(8 camadas · ~7.700 LoC Core · 4.415 interações empíricas)* | 🟢 em produção | R$ 200.000 – 350.000 |
+| **Método AEC** *(Avaliação Estruturada Cognitiva)* | 🟢 18 AECs reais | R$ 150.000 – 250.000 |
+| **Método MIMRE** *(Método Incentivador Mínimo do Relato Espontâneo)* | 🟢 em uso | R$ 100.000 – 200.000 |
+| **Compliance ICP-Brasil PBAD AD-RB CONFORME ITI v2.4** | 🟢 48 documentos assinados | R$ 80.000 – 150.000 |
+| **Sidecars cognitivos** *(Renal · Cannabis · Neuro · Sinais do Relato)* | 🟢 coletores ativos | R$ 80.000 – 150.000 |
+| **Base clínica inicial + framework SGQ** *(151 reports · 142 racionalidades · 18 AECs)* | 🟢 em formação | R$ 50.000 – 100.000 |
+| **Framework regulatório SaMD inicial** *(track ANVISA iniciado · LGPD · CFM)* | 🟡 em construção | R$ 50.000 – 100.000 |
+| **TOTAL — Valor de reposição** | | **R$ 960.000 – R$ 1.700.000** |
+| **Valor mediano conservador** | | **~R$ 1,15 milhão+** |
 
-| Componente | Valor estimado |
-|---|---|
-| Desenvolvimento técnico Pedro *(~10 meses)* | R$ 400.000 – 600.000 |
-| Método autoral Ricardo *(AEC + MIMRE + dossiês clínicos)* | R$ 300.000 – 500.000 |
-| Curadoria clínica Eduardo *(Neuro + Ensino)* | R$ 80.000 – 150.000 |
-| Engenharia institucional João *(parcerias + CNPJ)* | R$ 80.000 – 150.000 |
-| Custos operacionais informais | R$ 8.000 – 15.000 |
-| **TOTAL IP cedido** | **~R$ 868 mil – R$ 1,4 milhão** |
-| **Valor mediano** | **~R$ 1,15 milhão** |
+### O que isso significa para o investidor
 
-> **Mensagem:** o "investimento" maior *(plataforma + método autoral)* já foi entregue à empresa.
-> O capital pedido é para **operação, regulação e crescimento** — não para construir o produto, que já existe.
+· **R$ 1,15M+ de Build Capital já investido** pelos fundadores — sem desembolso de caixa, formalizado no acordo de cotistas como lastro de quotas
+· **0% do capital pedido vai para construir produto** — porque o produto **já existe**
+· O capital de R$ 2M vai integralmente para **Growth + Regulatory + Working Capital** *(detalhamento no Slide 22)*
+
+> **Mensagem-chave:** o ativo já foi construído. Agora o capital acelera a escala.
 
 ---
 
@@ -581,7 +586,18 @@ Quatro janelas que se abrem ao mesmo tempo:
 
 ## 21 · NECESSIDADE DE INVESTIMENTO
 
-**Captação alvo: R$ 2.000.000**
+**Captação alvo: R$ 2.000.000** — **Growth & Compliance Capital**
+
+> **O que este capital NÃO é:**
+> · Não é Build Capital — a plataforma já existe *(R$ 1,15M+ de ativos cedidos pelos fundadores · Slide 18)*
+> · Não é P&D fundacional — a IA Nôa, AEC, MIMRE, ICP-Brasil já operam em produção
+> · Não é montagem de infraestrutura — 17 Edge Functions, RLS 100%, locks 8 já preservados
+
+> **O que este capital É:**
+> · Growth Capital *(escalar o que já funciona)*
+> · Regulatory Capital *(certificações ANVISA SaMD + LGPD/DPIA)*
+> · Go-To-Market Capital *(BD nas cidades-alvo + primeiros pagantes)*
+> · Working Capital *(runway 12-18 meses pré-receita estabilizada)*
 
 ### Aplicação dos recursos
 
@@ -601,27 +617,40 @@ Quatro janelas que se abrem ao mesmo tempo:
 
 ---
 
-## 22 · CAPEX VISUAL · ALOCAÇÃO DO CAPITAL *(+ NOVO)*
+## 22 · GROWTH & COMPLIANCE CAPITAL · ALOCAÇÃO *(+ NOVO · reframe v3.3)*
 
 > Visualização dedicada da alocação. Em sala, este slide vira **gráfico pizza ou barras horizontais**.
 
-### Distribuição percentual
+### Categorização por tipo de capital *(framework investidor)*
 
 ```
-COMPLIANCE & REGULATÓRIO  ████████████████████████████████████   35%   R$  700.000
-TECNOLOGIA & OPERAÇÃO     █████████████████████████              25%   R$  500.000
-COMERCIAL & MARKETING     █████████████████████████              25%   R$  500.000
-CAPITAL DE GIRO           ███████████████                        15%   R$  300.000
+BUILD CAPITAL              (vazio)                                0%   R$ 0
+                           ↑ já investido pelos fundadores · ~R$ 1,15M+ (Slide 18)
 
-                                                          TOTAL  100%  R$ 2.000.000
+REGULATORY CAPITAL         ████████████████████████████████████  35%   R$  700.000
+GROWTH CAPITAL — Tech      █████████████████████████             25%   R$  500.000
+GROWTH CAPITAL — GTM       █████████████████████████             25%   R$  500.000
+WORKING CAPITAL            ███████████████                       15%   R$  300.000
+
+                                                          TOTAL 100%   R$ 2.000.000
 ```
+
+### Detalhamento por linha
+
+· **0% Build Capital** — *o produto já existe; os fundadores entregaram R$ 1,15M+ de Build Capital cedido como lastro de quotas*
+· **35% Regulatory Capital · R$ 700.000** — advogados *(societário + saúde digital)* · DPO + DPIA · prep ANVISA SaMD · Supabase Pro / PITR · ISO 13485 + IEC 62304
+· **25% Growth Capital · Tecnologia · R$ 500.000** — WiseCare produção · escala OpenAI · infraestrutura · Google Workspace @medcannlab · Resend pago · dev de escala
+· **25% Growth Capital · Go-To-Market · R$ 500.000** — BD em redes públicas / prefeituras das cidades-alvo · eventos médicos · growth pacientes · captação primeira cohort
+· **15% Working Capital · R$ 300.000** — runway operacional de 12-18 meses
+
+
 
 ### Lógica da alocação *(racional defensável em sala)*
 
-· **35% em Compliance** porque o moat regulatório é o que mais vale no setor de saúde digital · gasto não-postergável pra Marco 2
-· **25% em Tecnologia** porque a plataforma já existe — o gasto é em **escala** *(WiseCare prod, Supabase Pro, OpenAI uso ativo)*, não em construção
-· **25% em Comercial** porque o gargalo do modelo não é margem, é **chegar aos primeiros pagantes** — BD em redes/prefeituras é o caminho
-· **15% em Capital de Giro** garante **12-18 meses de runway** pré-receita previsível
+· **35% em Regulatory Capital** porque o moat regulatório é o que mais vale em saúde digital · gasto não-postergável pra Marco 2
+· **25% em Growth Capital — Tecnologia** porque a plataforma já existe — o gasto é em **escala** *(WiseCare prod, Supabase Pro, OpenAI uso ativo)*, não em construção
+· **25% em Growth Capital — Go-To-Market** porque o gargalo do modelo não é margem, é **chegar aos primeiros pagantes** — BD em redes/prefeituras é o caminho
+· **15% em Working Capital** garante **12-18 meses de runway** pré-receita previsível
 
 ### Cruzamento alocação ↔ Action Plan *(dinheiro → ação → resultado)*
 
@@ -711,9 +740,13 @@ Conectar pacientes, profissionais, pesquisadores e indústria através de uma in
 
 > *"Vocês estão pedindo R$ 15M pré-money com 0 cliente pagante, receita zero e CNPJ ainda abrindo. Por quê?"*
 
+### A resposta em 1 frase *(reframe categórico)*
+
+> **A MedCannLab não está captando Build Capital. O Build já foi investido pelos fundadores — R$ 1,15M+ em ativos operacionais cedidos. O capital pedido é Growth + Regulatory + GTM Capital · para escalar e regular o que já existe.**
+
 ### A resposta defensável *(em 4 blocos)*
 
-**1 · O investimento maior já foi feito · ~R$ 1,15M de IP cedido**
+**1 · O investimento maior já foi feito · ~R$ 1,15M de Build Capital cedido**
 
 A plataforma operacional *(17 Edge Functions, ~7.700 linhas de Core IA, 8 locks arquiteturais, assinatura ICP-Brasil PBAD AD-RB CONFORME ITI v2.4 verificada)* representa **~10 meses de desenvolvimento intensivo** dos 4 sócios. Avaliado conservadoramente em **~R$ 1,15 milhão de capital intelectual cedido**, formalizado como lastro de quotas no acordo de cotistas. O investidor entra com capital **complementar**, não para construir produto.
 
@@ -748,7 +781,7 @@ A plataforma operacional *(17 Edge Functions, ~7.700 linhas de Core IA, 8 locks 
 
 ### Resumo defensável em 1 frase
 
-> *"R$ 15M é o pré-money de quem entrega ao investidor uma plataforma operacional, compliance verificável, método autoral proprietário, mercado endereçável de ~163 mil pacientes DRC nas 4 cidades-alvo, equipe complementar e track ANVISA iniciado — pedindo R$ 2M para destravar a receita, não para construir o produto."*
+> *"R$ 15M é o pré-money de quem entrega ao investidor uma plataforma operacional, compliance verificável, método autoral proprietário, mercado endereçável de ~163 mil pacientes DRC nas 4 cidades-alvo, equipe complementar e track ANVISA iniciado — pedindo R$ 2M de Growth + Regulatory + GTM Capital para destravar a receita, não Build Capital, porque o produto já existe."*
 
 ---
 
@@ -771,7 +804,7 @@ A plataforma operacional *(17 Edge Functions, ~7.700 linhas de Core IA, 8 locks 
 
 **Documento:** Pitch Investidor — Versão Fusão Narrativa
 **Data:** 17 de junho de 2026
-**Versão:** 3.2 *(v3.1 + refinamentos empíricos via PAT: matriz competitive landscape · 3 diferenciais epistemológicos · breakdown 5 vertentes · engagement 30d · cruzamento CapEx↔Action Plan)*
+**Versão:** 3.3 *(v3.2 + reframe Build vs Growth Capital: Slide 18 reorientado pra ATIVOS entregues · Slide 21 com bloco "o que NÃO é Build Capital" · Slide 22 categorizado em Build/Growth/Regulatory/Working · Slide 27 abertura com reframe)*
 **Status:** rascunho para revisão dos 4 sócios antes de apresentação a investidor
 
 **Confirmações pendentes antes do pitch:**
