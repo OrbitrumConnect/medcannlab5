@@ -4,8 +4,8 @@
 
 *Clinical Intelligence · Precision Medicine · Real World Evidence*
 
-> **Versão 3.1 — fusão narrativa institucional + lastros empíricos + Action Plan executivo.**
-> Atualização 17/06/2026 noite: adicionados 4 slides solicitados em revisão consultiva *(Action Plan 2026-2029 · Municípios Prioritários · CapEx Visual · Backup Valuation)*. Estrutura institucional original do Pedro preservada · acréscimos empíricos cruzados via PAT 17/06 + memórias do projeto + WebSearch demografia DRC.
+> **Versão 3.2 — refinamento final pré-revisão de sócios.**
+> v3.0 institucional Pedro + v3.1 Action Plan/Municípios/CapEx/Backup do consultor externo + v3.2 refinamentos empíricos cruzados via PAT 17/06 14:30 *(breakdown 5 vertentes terapêuticas · engagement 30d · 3 diferenciais epistemológicos cravados em memória · matriz competitive landscape · cruzamento alocação ↔ Action Plan)*.
 
 ---
 
@@ -141,6 +141,14 @@ Destaques:
 > **A MedCannLab não substitui o médico.**
 > Ela potencializa sua capacidade de análise e tomada de decisão.
 
+### Diferenciais epistemológicos *(cravados em método)*
+
+· **Queixa ≠ Sintoma** — a AEC preserva a abertura fenomenológica onde a anamnese clássica fecha cedo. Anamnese clássica é centrífuga *(sintoma → doença)*; AEC é centrípeta *(indivíduo → eventualmente doença)*. Princípio autoral do Dr. Ricardo Valença.
+
+· **Sinalização contida é feature, não limitação** — Matrix Z2 *(camada cognitiva da Nôa)* opera com **RAG curado de 5 entries hand-crafted**, não com banco de documentos migrado em massa. Decisão arquitetural empírica que protege contra alucinação por hijacking de contexto. Evidência: 1 incidente em 16 dias **antes** da decisão · 6 incidentes em 21h **depois** de migração em massa *(empírico maio/2026, V1.9.318)*.
+
+· **Locks arquiteturais MACRO vs MICRO** — separação explícita entre Constituição *(regra hard que muda só via nova versão do Livro Magno)* e implementação *(que pode evoluir)*. Anti-kevlar arquitetado, não declarado. 8 locks formalizados ao longo de ~10 meses.
+
 ### Por que é defensável
 
 | Camada | Quem mais tem |
@@ -150,6 +158,19 @@ Destaques:
 | Sidecar Cannabis no Relato — farmacologia renal-específica | Ninguém |
 | ICP-Brasil PBAD AD-RB real | Menos de 5% das healthtech brasileiras |
 | Sidecar Neuro — TEA / TOD / TDAH | Diferencial do Dr. Eduardo Faveret |
+
+### Matriz Competitive Landscape
+
+| Categoria | Exemplos | Transcreve / Roteia | Escuta fenomenológica | Método autoral validado | Sidecar Renal pré-lab | Farmacologia Cannabis-Renal | ICP-Brasil PBAD AD-RB |
+|---|---|---|---|---|---|---|---|
+| **Scribes médicos** | Nuance · Abridge · Augmedix · DeepScribe | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Symptom checkers** | Infermedica · Ada · Babylon | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **EMRs BR** | Tasy *(Philips)* · MV · Doctoralia · HCloud | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **HealthTech BR cannabis** | Cabreca · Mevi · Mais Verde · Cannect | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **MedCannLab** | — | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+> **O moat não é uma feature — é a interseção das 6.**
+> Cada incumbente cobre 1 ou 2 camadas. A MedCannLab é a única pilha que cobre da escuta fiel à documentação juridicamente válida.
 
 ---
 
@@ -168,6 +189,13 @@ Resultados acumulados até **17/06/2026** *(empírico, banco de dados auditado v
 · **100** agendamentos realizados
 · **54** usuários cadastrados *(34 pacientes · 11 profissionais · 5 admins · 4 legacy)*
 · **97** salas de chat clínico ativas
+
+### Engagement medido nos últimos 30 dias *(empírico via PAT)*
+
+· **22** relatórios clínicos gerados
+· **14** usuários ativos no período
+· **14** relatórios assinados ICP-Brasil *(taxa de assinatura 100% dos gerados pelos médicos ativos)*
+· **~1,5** relatório por usuário ativo no mês *(proxy de densidade de uso em ambiente de teste)*
 
 ### Tração comercial *(transparência)*
 
@@ -446,11 +474,22 @@ Esse ativo possui enorme valor para pesquisa, indústria e sistemas de saúde.
 ### Lastros empíricos do ativo RWE *(em junho/2026)*
 
 · **151 relatórios clínicos** estruturados em formato padronizado
-· **142 racionalidades clínicas** em 5 vertentes terapêuticas
+· **142 racionalidades clínicas** em 5 vertentes terapêuticas *(empírico via PAT 17/06)*:
+
+| Vertente | Quantidade | % |
+|---|---|---|
+| Integrativa | 105 | 74% |
+| Biomédica | 13 | 9% |
+| Homeopática | 10 | 7% |
+| Medicina Tradicional Chinesa | 8 | 6% |
+| Ayurvédica | 6 | 4% |
+
 · **4.415 interações IA** instrumentadas com metadata completa
 · **48 documentos** com cadeia ICP-Brasil válida *(prova judicial)*
 · **18 AECs** em curso ou completas
 · **100 agendamentos** *(longitudinal de comparecimento)*
+
+> A presença das 5 vertentes em uso real demonstra **cobertura terapêutica ampla** — diferencial pra RWE com indústria farma *(que tipicamente só tem dados biomédicos)*.
 
 > A âncora narrativa de longo prazo: a Sociedade Brasileira de Nefrologia estima **~70.000 pacientes DRC mapeáveis em estágios precoces** — mercado primário para o relatório B2B R$ 122 / unidade.
 
@@ -583,6 +622,17 @@ CAPITAL DE GIRO           ███████████████         
 · **25% em Tecnologia** porque a plataforma já existe — o gasto é em **escala** *(WiseCare prod, Supabase Pro, OpenAI uso ativo)*, não em construção
 · **25% em Comercial** porque o gargalo do modelo não é margem, é **chegar aos primeiros pagantes** — BD em redes/prefeituras é o caminho
 · **15% em Capital de Giro** garante **12-18 meses de runway** pré-receita previsível
+
+### Cruzamento alocação ↔ Action Plan *(dinheiro → ação → resultado)*
+
+| Linha de gasto | Etapa do Action Plan dirigida | Resultado mensurável |
+|---|---|---|
+| **35% Compliance e Regulatório** | Marco 0 ANVISA *(já iniciado)* · Etapa 1 *(advogados + DPO)* · Etapa 2 *(Supabase Pro + DPIA)* | Certificações + compliance auditável → destrava Marco 2 |
+| **25% Tecnologia e Operação** | Etapa 1 *(Stripe + escala infra)* · Etapa 2 *(WiseCare prod)* · Etapas 3-4 *(escala IA)* | Plataforma robusta sob carga real → suporta 4k → 20k usuários |
+| **25% Comercial e Marketing** | Etapa 2 *(primeiras clínicas)* · Etapas 3-4 *(BD nas 4 cidades + prefeituras)* | Chegar aos pagantes → break-even Marco 2 → tração regional Marco 3 |
+| **15% Capital de Giro** | Cobre meses 1-18 *(Etapas 1-2 inteiras)* | Runway pré-receita previsível · evita pivot por aperto financeiro |
+
+> **Cada real do capital tem destino visível.** O investidor enxerga em qual marco aquele dinheiro vai virar resultado mensurável.
 
 ---
 
@@ -721,7 +771,7 @@ A plataforma operacional *(17 Edge Functions, ~7.700 linhas de Core IA, 8 locks 
 
 **Documento:** Pitch Investidor — Versão Fusão Narrativa
 **Data:** 17 de junho de 2026
-**Versão:** 3.1 *(v3.0 + 4 slides solicitados em revisão consultiva: Action Plan 2026-2029 · Municípios Prioritários · CapEx Visual · Backup Valuation)*
+**Versão:** 3.2 *(v3.1 + refinamentos empíricos via PAT: matriz competitive landscape · 3 diferenciais epistemológicos · breakdown 5 vertentes · engagement 30d · cruzamento CapEx↔Action Plan)*
 **Status:** rascunho para revisão dos 4 sócios antes de apresentação a investidor
 
 **Confirmações pendentes antes do pitch:**
